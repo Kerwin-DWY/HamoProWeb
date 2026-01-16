@@ -31,3 +31,21 @@ export async function createAvatar(accessToken, avatar) {
 
   return res.json();
 }
+
+/**
+ * DELETE /avatars/{avatarId}
+ */
+export async function deleteAvatar(accessToken, avatarId) {
+  const res = await fetch(`${API_BASE}/avatars/${avatarId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete avatar");
+  }
+
+  return res.json(); // { message, avatarId }
+}
