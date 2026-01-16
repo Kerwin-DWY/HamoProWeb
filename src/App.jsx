@@ -11,20 +11,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("avatars");
   const [avatars, setAvatars] = useState([]);
 
+  console.log("Access token:", auth.user?.access_token);
 
-  if (auth.isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center text-slate-500">
-        Checking login session…
-      </div>
-    );
-  }
-
-  //  Only show login if truly unauthenticated
+  // Only show login AFTER loading is complete
   if (!auth.isAuthenticated) {
     return <LoginPage />;
   }
 
+  // Authenticated → go straight to main app
   return (
     <>
       <Header />
