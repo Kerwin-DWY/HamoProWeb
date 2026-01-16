@@ -1,14 +1,26 @@
 import { useState } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import CreateAvatarModal from "./CreateAvatarModal";
+import { useAuth } from "react-oidc-context"; 
+import { createAvatar } from "../api/avatarsApi";
 
-export default function AiAvatarsSection() {
-  const [avatars, setAvatars] = useState([]);
+export default function AiAvatarsSection({ avatars, setAvatars }) {
+  const auth = useAuth(); 
   const [showModal, setShowModal] = useState(false);
 
-  const handleCreateAvatar = (avatar) => {
-    setAvatars((prev) => [...prev, avatar]);
-    setShowModal(false);
+  const handleCreateAvatar = async (form) => {
+    try {
+      const created = await createAvatar(
+        auth.user.access_token, // Cognito token
+        form                    // avatar payload
+      );
+
+      setAvatars((prev) => [...prev, created]);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create avatar");
+    }
   };
 
   return (

@@ -1,0 +1,33 @@
+const API_BASE = "https://8ys1hr8ne0.execute-api.ap-east-1.amazonaws.com";
+
+export async function fetchAvatars(accessToken) {
+  const res = await fetch(`${API_BASE}/avatars`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch avatars");
+  }
+
+  return res.json();
+}
+
+export async function createAvatar(accessToken, avatar) {
+  const res = await fetch(`${API_BASE}/avatars`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(avatar),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to create avatar");
+  }
+
+  return res.json();
+}

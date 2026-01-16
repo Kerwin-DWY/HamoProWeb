@@ -1,5 +1,7 @@
 import { useAuth } from "react-oidc-context";
 import { useState } from "react";
+import { useEffect } from "react";
+import { fetchAvatars } from "./api/avatarsApi";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
@@ -10,6 +12,14 @@ export default function App() {
   const auth = useAuth();
   const [activeTab, setActiveTab] = useState("avatars");
   const [avatars, setAvatars] = useState([]);
+
+  useEffect(() => {
+  if (!auth.user?.access_token) return;
+
+  fetchAvatars(auth.user.access_token)
+    .then(setAvatars)
+    .catch(console.error);
+}, [auth.user]);
 
   console.log("Access token:", auth.user?.access_token);
 
