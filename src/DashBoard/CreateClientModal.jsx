@@ -21,15 +21,12 @@ export default function CreateClientModal({ avatars, onClose, onCreate }) {
   const handleSubmit = () => {
     if (!form.name || !form.avatarId) return;
 
-    const selectedAvatar = avatars.find(
-      (a, idx) => String(idx) === form.avatarId
-    );
-
     onCreate({
       ...form,
-      avatar: selectedAvatar,
+      avatarId: avatars[form.avatarId].avatarId, // send only the real avatarId to entire avatar object
     });
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-black/40 pt-[120px]">
