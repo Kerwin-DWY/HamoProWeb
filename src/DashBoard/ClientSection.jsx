@@ -92,6 +92,7 @@ export default function ClientsSection({ avatars, onStartChat }) {
       ) : (
         <ClientGrid
           clients={clients}
+          avatars={avatars} 
           onStartChat={onStartChat}
           onDeleteClick={setClientToDelete}
         />
@@ -154,7 +155,10 @@ function EmptyState({ onCreate }) {
   );
 }
 
-function ClientGrid({ clients, onStartChat, onDeleteClick }) {
+function ClientGrid({ clients, avatars, onStartChat, onDeleteClick }) {
+  const avatarMap = Object.fromEntries(
+    avatars.map(a => [a.avatarId, a.name])
+  );
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {clients.map((client) => (
@@ -196,7 +200,7 @@ function ClientGrid({ clients, onStartChat, onDeleteClick }) {
           <div className="mt-4 text-sm text-slate-600 space-y-1">
             <p>
               <span className="font-medium">Avatar:</span>{" "}
-              {client.avatarId}
+               {avatarMap[client.avatarId] || "Unknown Avatar"}
             </p>
             <p>
               <span className="font-medium">Emotion Pattern:</span>{" "}

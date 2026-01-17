@@ -7,21 +7,20 @@ import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
 import LoginPage from "./auth/LoginPage";
+
 export default function App() {
   const auth = useAuth();
   const [activeTab, setActiveTab] = useState("avatars");
   const [avatars, setAvatars] = useState([]);
 
-  // Avatars fetch here cause it needs to be shared between AiAvatarsSection and ClientSection
+  // Fetch avatars here cause it's a application-level state used everywhere
   useEffect(() => {
-  if (!auth.user?.access_token) return;
+    if (!auth.user?.access_token) return;
 
-  fetchAvatars(auth.user.access_token)
-    .then(setAvatars)
-    .catch(console.error);
+    fetchAvatars(auth.user.access_token)
+      .then(setAvatars)
+      .catch(console.error);
   }, [auth.user]);
-
-  console.log("Access token:", auth.user?.access_token);
 
   // Only show login AFTER loading is complete
   if (!auth.isAuthenticated) {
