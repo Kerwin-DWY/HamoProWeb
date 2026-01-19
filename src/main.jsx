@@ -5,6 +5,7 @@ import { AuthProvider } from "react-oidc-context";
 import { WebStorageStateStore } from "oidc-client-ts";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthCallback from "./auth/AuthCallback";
+import ChatPage from "./chat/chatPage";
 
 const cognitoAuthConfig = {
   authority: "https://cognito-idp.ap-east-1.amazonaws.com/ap-east-1_schnkEBdb",
@@ -28,6 +29,7 @@ root.render(
     <AuthProvider {...cognitoAuthConfig}>
       <Routes>
         <Route path="/callback" element={<AuthCallback />} />
+        <Route path="/chat/:clientId" element={<ChatPage />} />
         <Route path="/*" element={<App />} />
       </Routes>
     </AuthProvider>

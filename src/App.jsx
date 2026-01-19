@@ -13,7 +13,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("avatars");
   const [avatars, setAvatars] = useState([]);
 
-  // Fetch avatars here cause it's a application-level state used everywhere
+  // Fetch avatars here cause it's a application-level state that used everywhere
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
