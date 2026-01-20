@@ -9,72 +9,71 @@ export default function ChatPage() {
   const { clientId } = useParams();
   const { state } = useLocation();
   const auth = useAuth();
-
   const [client, setClient] = useState(state?.client || null);
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello, I’m your AI therapist. How are you feeling today?", sender: "ai" }
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(!state?.client);
+  const [isThinking, setIsThinking] = useState(false);
 
   // Effect to handle page refreshes (when state.client is lost)
   useEffect(() => {
     if (!client && clientId && auth.user?.access_token) {
-      // In a real app, you would call your API here:
-      // fetchClientById(auth.user.access_token, clientId).then(setClient)
       
       console.log("Page refreshed. Need to fetch client details for ID:", clientId);
-      // For now, if you don't have a specific "fetch single client" API yet, 
-      // this placeholder keeps the UI from breaking:
-      setIsLoading(false); 
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(false);
     }
   }, [clientId, client, auth.user]);
 
-const handleSendMessage = async (e) => {
-  e.preventDefault();
-  if (!inputText.trim()) return;
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
 
-  const userMessage = {
-    id: Date.now(),
-    text: inputText,
-    sender: "user",
+    const userMessage = {
+      id: Date.now(),
+      text: inputText,
+      sender: "user",
+    };
+
+    // Show user message immediately
+    setMessages(prev => [...prev, userMessage]);
+    setInputText("");
+
+    // START thinking animation
+    setIsThinking(true);
+
+    try {
+      const aiReply = await sendChatMessage(userMessage.text);
+
+      const aiMessages = aiReply
+          .split("\n")
+          .filter(line => line.trim() !== "")
+          .map((line, index) => ({
+            id: Date.now() + index + 1,
+            text: line.trim(),
+            sender: "ai",
+          }));
+
+      setMessages(prev => [...prev, ...aiMessages]);
+    } catch (err) {
+      console.error(err);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now(),
+          text: "Sorry, something went wrong.",
+          sender: "ai",
+        },
+      ]);
+    } finally {
+      // STOP thinking animation
+      setIsThinking(false);
+    }
   };
 
-  // Show user message immediately
-  setMessages(prev => [...prev, userMessage]);
-  setInputText("");
-
-  try {
-    // Call backend Gemini API
-    const aiReply = await sendChatMessage(userMessage.text);
-
-    // Split by newline and create multiple AI messages
-    const aiMessages = aiReply
-      .split("\n")
-      .filter(line => line.trim() !== "")
-      .map((line, index) => ({
-        id: Date.now() + index + 1,
-        text: line.trim(),
-        sender: "ai",
-      }));
-
-    // Append AI messages
-    setMessages(prev => [...prev, ...aiMessages]);
-
-    } catch (err) {
-    console.error(err);
-    setMessages(prev => [
-      ...prev,
-      {
-        id: Date.now(),
-        text: "Sorry, something went wrong.",
-        sender: "ai",
-      },
-    ]);
-  }
-};
 
   if (isLoading) {
     return (
@@ -142,6 +141,22 @@ const handleSendMessage = async (e) => {
                 </div>
               </div>
             ))}
+
+
+            {isThinking && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-600 flex items-center gap-2">
+                    <span className="font-semibold text-indigo-600">HAMO</span>
+                    <span>is thinking</span>
+                    <span className="flex gap-1">
+                      <span className="animate-bounce">.</span>
+                      <span className="animate-bounce delay-150">.</span>
+                      <span className="animate-bounce delay-300">.</span>
+                    </span>
+                  </div>
+                </div>
+            )}
+
           </div>
 
           {/* Input Area */}
