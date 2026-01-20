@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
-import { useAuth } from "react-oidc-context"; // Assuming you need auth for API calls
+import { useAuth } from "react-oidc-context"; 
+import {sendChatMessage} from "../api/chatApi"; 
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -31,24 +32,49 @@ export default function ChatPage() {
     }
   }, [clientId, client, auth.user]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+const handleSendMessage = async (e) => {
+  e.preventDefault();
+  if (!inputText.trim()) return;
 
-    // Add user message
-    const newMessage = { id: Date.now(), text: inputText, sender: "user" };
-    setMessages([...messages, newMessage]);
-    setInputText("");
-
-    // Simulate AI response delay
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        text: "I understand. Tell me more about that.",
-        sender: "ai"
-      }]);
-    }, 1000);
+  const userMessage = {
+    id: Date.now(),
+    text: inputText,
+    sender: "user",
   };
+
+  // Show user message immediately
+  setMessages(prev => [...prev, userMessage]);
+  setInputText("");
+
+  try {
+    // Call backend Gemini API
+    const aiReply = await sendChatMessage(userMessage.text);
+
+    // Split by newline and create multiple AI messages
+    const aiMessages = aiReply
+      .split("\n")
+      .filter(line => line.trim() !== "")
+      .map((line, index) => ({
+        id: Date.now() + index + 1,
+        text: line.trim(),
+        sender: "ai",
+      }));
+
+    // Append AI messages
+    setMessages(prev => [...prev, ...aiMessages]);
+
+    } catch (err) {
+    console.error(err);
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        text: "Sorry, something went wrong.",
+        sender: "ai",
+      },
+    ]);
+  }
+};
 
   if (isLoading) {
     return (
