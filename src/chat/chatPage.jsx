@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useAuth } from "react-oidc-context";
 import { sendChatMessage } from "../api/chatApi";
+import {cleanAIText, chunkIntoMessages} from "../utils/chatTextUtils.js";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -53,14 +54,16 @@ export default function ChatPage() {
     try {
       const aiReply = await sendChatMessage(userMessage.text);
 
-      const aiMessages = aiReply
-          .split("\n")
-          .filter((line) => line.trim() !== "")
-          .map((line, index) => ({
-            id: Date.now() + index + 1,
-            text: line.trim(),
-            sender: "ai",
-          }));
+      const cleanedText = cleanAIText(aiReply);
+      const chunks = chunkIntoMessages(cleanedText, 3, 5);
+
+      const aiMessages = chunks.map((chunk, index) => ({
+        id: Date.now() + index + 1,
+        text: chunk,
+        sender: "ai",
+      }));
+
+
 
       setMessages((prev) => [...prev, ...aiMessages]);
     } catch (err) {
