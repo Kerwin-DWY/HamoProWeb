@@ -27,6 +27,8 @@ export default function App() {
     return <LoginPage />;
   }
 
+  // console.log("Access token!!:", auth.user.access_token);
+
   // Authenticated → go straight to main app
   return (
     <>
