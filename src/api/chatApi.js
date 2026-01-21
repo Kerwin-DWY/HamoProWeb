@@ -1,4 +1,4 @@
-const API_BASE = "http://18.233.134.123:3001/api";
+const API_BASE = "https://api.qualemind.com/api";
 
 /**
  * Send message to AI

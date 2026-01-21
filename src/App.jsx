@@ -1,6 +1,8 @@
 import { useAuth } from "react-oidc-context";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useUser } from "./context/UserContext";
+import { getAppMode } from "./utils/appMode";
+import { initUserProfile } from "./api/userApi";
 import { fetchAvatars } from "./api/avatarsApi";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
@@ -10,56 +12,93 @@ import LoginPage from "./auth/LoginPage";
 
 export default function App() {
   const auth = useAuth();
-  const [activeTab, setActiveTab] = useState("avatars");
+  const { profile, setProfile } = useUser();
+
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [avatars, setAvatars] = useState([]);
 
-  // Fetch avatars here cause it's a application-level state that used everywhere
+  const mode = getAppMode(); // "pro" | "app"
+
+  // Initialize user profile
+  useEffect(() => {
+    if (!auth.user?.access_token) return;
+    if (profile) return;
+
+    initUserProfile({
+      token: auth.user.access_token,
+      mode,
+    })
+        .then(setProfile)
+        .catch(console.error);
+  }, [auth.user, profile, mode]);
+
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const host = window.location.hostname;
+
+    if (profile.role === "THERAPIST" && host.startsWith("app.")) {
+      window.location.replace("https://pro.qualemind.com");
+    }
+
+    if (profile.role === "CLIENT" && host.startsWith("pro.")) {
+      window.location.replace("https://app.qualemind.com");
+    }
+  }, [profile]);
+
+
+  // Fetch avatars (THIS WAS MISSING / BROKEN)
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
     fetchAvatars(auth.user.access_token)
-      .then(setAvatars)
-      .catch(console.error);
+        .then(setAvatars)
+        .catch(console.error);
   }, [auth.user]);
 
-  // Only show login AFTER loading is complete
+  // ---------- Guards ----------
+
   if (!auth.isAuthenticated) {
     return <LoginPage />;
   }
 
-  // console.log("Access token!!:", auth.user.access_token);
+  if (!profile) {
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+          Initializing account…
+        </div>
+    );
+  }
 
-  // Authenticated → go straight to main app
+  // ---------- UI ----------
+
   return (
-    <>
-      <Header />
+      <>
+        <Header />
 
-      <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
-        <div className="flex justify-center px-6">
-          <DashboardNav
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
-        </div>
-
-        <div className="flex justify-center mt-12 px-6">
-          {activeTab === "avatars" && (
-            <AiAvatarsSection
-              avatars={avatars}
-              setAvatars={setAvatars}
+        <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+          <div className="flex justify-center px-6">
+            <DashboardNav
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                role={profile.role}
             />
-          )}
+          </div>
 
-          {activeTab === "clients" && (
-            <ClientSection
-              avatars={avatars}
-              onStartChat={(client) =>
-                console.log("Start chat with:", client)
-              }
-            />
-          )}
-        </div>
-      </main>
-    </>
+          <div className="flex justify-center mt-12 px-6">
+            {activeTab === "avatars" && profile.role === "THERAPIST" && (
+                <AiAvatarsSection
+                    avatars={avatars}
+                    setAvatars={setAvatars}
+                />
+            )}
+
+            {activeTab === "clients" && profile.role === "CLIENT" && (
+                <ClientSection avatars={avatars} />
+            )}
+          </div>
+        </main>
+      </>
   );
 }
