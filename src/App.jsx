@@ -13,11 +13,15 @@ import LoginPage from "./auth/LoginPage";
 export default function App() {
   const auth = useAuth();
   const { profile, setProfile } = useUser();
-
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [avatars, setAvatars] = useState([]);
-
   const mode = getAppMode(); // "pro" | "app"
+
+  // Determine initial active tab based on user role
+  const [activeTab, setActiveTab] = useState(() => {
+    if (!profile) return null;
+    return profile.role === "THERAPIST" ? "avatars" : "clients";
+  });
+
 
   // Initialize user profile
   useEffect(() => {
@@ -75,7 +79,7 @@ export default function App() {
 
   return (
       <>
-        <Header />
+        <Header role={profile.role} />
 
         <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
           <div className="flex justify-center px-6">

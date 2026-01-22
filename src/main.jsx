@@ -12,8 +12,6 @@ const redirect_uri = `${window.location.origin}/callback`;
 const cognitoAuthConfig = {
   authority: "https://cognito-idp.ap-east-1.amazonaws.com/ap-east-1_schnkEBdb",
   client_id: "3ml5mut2nqeqdbfk86eeifnjrg",
-  //redirect_uri: "https://qualemind.com/callback", // production
-  //redirect_uri: "http://localhost:5174/callback", // development
   redirect_uri,
   response_type: "code",
   scope: "aws.cognito.signin.user.admin email openid phone profile",
