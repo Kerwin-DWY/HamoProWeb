@@ -1,5 +1,6 @@
 import { useAuth } from "react-oidc-context";
 import { Brain, ArrowRight } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -15,7 +16,9 @@ export default function LoginPage() {
     );
   }
 
-  if (auth.isAuthenticated) return null;
+  if (auth.isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#fafafa]">

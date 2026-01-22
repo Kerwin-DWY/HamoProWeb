@@ -7,7 +7,7 @@ export default function AuthCallback() {
   if (auth.isLoading) {
     return (
       <div className="h-screen flex items-center justify-center text-slate-500">
-        Completing sign-in…
+        Signing you in…
       </div>
     );
   }

@@ -9,21 +9,33 @@ import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
 import LoginPage from "./auth/LoginPage";
+import { Navigate } from "react-router-dom";
 
 export default function App() {
   const auth = useAuth();
   const { profile, setProfile } = useUser();
   const [avatars, setAvatars] = useState([]);
   const mode = getAppMode(); // "pro" | "app"
+  const host = window.location.hostname;
 
-  // Determine initial active tab based on user role
+  // -----------------------------
+  // Initialize active tab by role
+  // -----------------------------
   const [activeTab, setActiveTab] = useState(() => {
     if (!profile) return null;
     return profile.role === "THERAPIST" ? "avatars" : "clients";
   });
 
+  // -----------------------------
+  // Detect role / domain mismatch
+  // -----------------------------
+  const isRoleMismatch =
+      (profile?.role === "THERAPIST" && host.startsWith("app.")) ||
+      (profile?.role === "CLIENT" && host.startsWith("pro."));
 
+  // -----------------------------
   // Initialize user profile
+  // -----------------------------
   useEffect(() => {
     if (!auth.user?.access_token) return;
     if (profile) return;
@@ -36,23 +48,9 @@ export default function App() {
         .catch(console.error);
   }, [auth.user, profile, mode]);
 
-
-  useEffect(() => {
-    if (!profile) return;
-
-    const host = window.location.hostname;
-
-    if (profile.role === "THERAPIST" && host.startsWith("app.")) {
-      window.location.replace("https://pro.qualemind.com");
-    }
-
-    if (profile.role === "CLIENT" && host.startsWith("pro.")) {
-      window.location.replace("https://app.qualemind.com");
-    }
-  }, [profile]);
-
-
-  // Fetch avatars (THIS WAS MISSING / BROKEN)
+  // -----------------------------
+  // Fetch avatars (therapist data)
+  // -----------------------------
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
@@ -61,22 +59,43 @@ export default function App() {
         .catch(console.error);
   }, [auth.user]);
 
-  // ---------- Guards ----------
-
-  if (!auth.isAuthenticated) {
-    return <LoginPage />;
-  }
-
-  if (!profile) {
+  // -----------------------------
+  // Guards
+  // -----------------------------
+  //  Auth still restoring from storage
+  if (auth.isLoading) {
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center text-slate-500">
           Initializing account…
         </div>
     );
   }
 
-  // ---------- UI ----------
+// Not authenticated
+  if (!auth.isAuthenticated) {
+    return <LoginPage />;
+  }
 
+// Authenticated, waiting for profile
+  if (!profile) {
+    return (
+        <div className="min-h-screen flex items-center justify-center text-slate-400">
+          Initializing account…
+        </div>
+    );
+  }
+
+
+  // -----------------------------
+  // Role / Domain mismatch page
+  // -----------------------------
+  if (isRoleMismatch) {
+    return <RoleMismatchPage role={profile.role} />;
+  }
+
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
       <>
         <Header role={profile.role} />
@@ -104,5 +123,38 @@ export default function App() {
           </div>
         </main>
       </>
+  );
+}
+
+// =====================================================
+// Role mismatch blocking page
+// =====================================================
+function RoleMismatchPage({ role }) {
+  const targetDomain =
+      role === "THERAPIST"
+          ? "https://pro.qualemind.com"
+          : "https://app.qualemind.com";
+
+  return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <h2 className="text-xl font-semibold text-slate-900 mb-3">
+            Access Restricted
+          </h2>
+
+          <p className="text-slate-600 mb-6">
+            You are signed in as a{" "}
+            <span className="font-medium">{role.toLowerCase()}</span>, but this
+            portal is not available for your role.
+          </p>
+
+          <a
+              href={targetDomain}
+              className="inline-block bg-indigo-600 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition"
+          >
+            Go to correct portal
+          </a>
+        </div>
+      </div>
   );
 }
