@@ -49,7 +49,6 @@ export async function createClient(accessToken, client) {
       name: client.name,
       sex: client.sex,
       age: client.age,
-      avatarId: client.avatarId,
       emotionPattern: client.emotionPattern,
       personality: client.personality,
       cognition: client.cognition,
@@ -58,6 +57,7 @@ export async function createClient(accessToken, client) {
     }),
   });
 }
+
 
 /**
  * =========================

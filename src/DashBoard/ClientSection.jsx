@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"; // Combined imports
 import { Plus, Users } from "lucide-react";
 import CreateClientModal from "./CreateClientModal";
-import { createClient, fetchClients, deleteClient } from "../api/clientsApi";
+import { createClient, fetchClients, deleteClient } from "../api/lamda/clientsApi.js";
 import { useAuth } from "react-oidc-context";
 import ClientGrid from  "./clientGrid";
 
@@ -75,7 +75,6 @@ export default function ClientsSection({ avatars }) { // Removed unused onStartC
 
       {showModal && (
         <CreateClientModal
-          avatars={avatars}
           onClose={() => setShowModal(false)}
           onCreate={handleCreateClient}
         />

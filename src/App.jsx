@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "./context/UserContext";
 import { getAppMode } from "./utils/appMode";
 import { initUserProfile } from "./api/userApi";
-import { fetchAvatars } from "./api/avatarsApi";
+import { fetchAvatars } from "./api/lamda/avatarsApi.js";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
@@ -19,41 +19,38 @@ export default function App() {
   const host = window.location.hostname;
 
   // =====================================================
-  // Derived default tab (NO useEffect, ESLint-safe)
+  // Derived default tab
   // =====================================================
   const defaultTab =
       profile?.role === "THERAPIST"
           ? "avatars"
           : profile?.role === "CLIENT"
-              ? "clients"
+              ? null
               : null;
 
   const resolvedTab = activeTab ?? defaultTab;
 
   // =====================================================
-  // Detect role / domain mismatch
+  // Role / domain mismatch
   // =====================================================
   const isRoleMismatch =
       (profile?.role === "THERAPIST" && host.startsWith("app.")) ||
       (profile?.role === "CLIENT" && host.startsWith("pro."));
 
   // =====================================================
-  // Initialize user profile
+  // Initialize profile
   // =====================================================
   useEffect(() => {
     if (!auth.user?.access_token) return;
     if (profile) return;
 
-    initUserProfile({
-      token: auth.user.access_token,
-      mode,
-    })
+    initUserProfile({ token: auth.user.access_token, mode })
         .then(setProfile)
         .catch(console.error);
   }, [auth.user, profile, mode, setProfile]);
 
   // =====================================================
-  // Fetch avatars (therapist data)
+  // Fetch avatars
   // =====================================================
   useEffect(() => {
     if (!auth.user?.access_token) return;
@@ -67,11 +64,7 @@ export default function App() {
   // Guards
   // =====================================================
   if (auth.isLoading) {
-    return (
-        <div className="h-screen flex items-center justify-center text-slate-500">
-          Initializing account…
-        </div>
-    );
+    return <CenteredText>Initializing account…</CenteredText>;
   }
 
   if (!auth.isAuthenticated) {
@@ -79,11 +72,7 @@ export default function App() {
   }
 
   if (!profile) {
-    return (
-        <div className="min-h-screen flex items-center justify-center text-slate-400">
-          Initializing account…
-        </div>
-    );
+    return <CenteredText>Initializing account…</CenteredText>;
   }
 
   if (isRoleMismatch) {
@@ -98,13 +87,17 @@ export default function App() {
         <Header role={profile.role} />
 
         <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
-          <div className="flex justify-center px-6">
-            <DashboardNav
-                activeTab={resolvedTab}
-                setActiveTab={setActiveTab}
-                role={profile.role}
-            />
-          </div>
+
+          {/* Therapist ONLY */}
+          {profile.role === "THERAPIST" && (
+              <div className="flex justify-center px-6">
+                <DashboardNav
+                    activeTab={resolvedTab}
+                    setActiveTab={setActiveTab}
+                    role={profile.role}
+                />
+              </div>
+          )}
 
           <div className="flex justify-center mt-12 px-6">
             {resolvedTab === "avatars" && profile.role === "THERAPIST" && (
@@ -114,8 +107,15 @@ export default function App() {
                 />
             )}
 
-            {resolvedTab === "clients" && profile.role === "CLIENT" && (
+            {resolvedTab === "clients" && profile.role === "THERAPIST" && (
                 <ClientSection avatars={avatars} />
+            )}
+
+            {/* CLIENT placeholder */}
+            {profile.role === "CLIENT" && (
+                <div className="text-slate-500 text-lg">
+                  Client experience coming soon…
+                </div>
             )}
           </div>
         </main>
@@ -123,35 +123,10 @@ export default function App() {
   );
 }
 
-// =====================================================
-// Role mismatch blocking page
-// =====================================================
-function RoleMismatchPage({ role }) {
-  const targetDomain =
-      role === "THERAPIST"
-          ? "https://pro.qualemind.com"
-          : "https://app.qualemind.com";
-
+function CenteredText({ children }) {
   return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <h2 className="text-xl font-semibold text-slate-900 mb-3">
-            Access Restricted
-          </h2>
-
-          <p className="text-slate-600 mb-6">
-            You are signed in as a{" "}
-            <span className="font-medium">{role.toLowerCase()}</span>, but this
-            portal is not available for your role.
-          </p>
-
-          <a
-              href={targetDomain}
-              className="inline-block bg-indigo-600 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition"
-          >
-            Go to correct portal
-          </a>
-        </div>
+      <div className="min-h-screen flex items-center justify-center text-slate-400">
+        {children}
       </div>
   );
 }
