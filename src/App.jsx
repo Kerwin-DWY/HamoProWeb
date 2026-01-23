@@ -1,7 +1,7 @@
 import { useAuth } from "react-oidc-context";
 import { useEffect, useState } from "react";
 import { useUser } from "./context/UserContext";
-import { getAppMode } from "./utils/appMode";
+import {getAppMode, getLocalModeOverride} from "./utils/appMode";
 import { initUserProfile } from "./api/userApi";
 import { fetchAvatars } from "./api/lamda/avatarsApi.js";
 import Header from "./Header";
@@ -32,11 +32,24 @@ export default function App() {
   const resolvedTab = activeTab ?? defaultTab;
 
   // =====================================================
-  // Role / domain mismatch
+  // Role / domain mismatch.
+  // For Develop -> http://localhost:5174?mode=app and http://localhost:5174?mode=pro
   // =====================================================
+  const localMode = getLocalModeOverride();
+  const isLocalhost = host === "localhost";
+
+  const effectiveMode = isLocalhost
+      ? localMode
+      : host.startsWith("pro.")
+          ? "pro"
+          : host.startsWith("app.")
+              ? "app"
+              : null;
+
   const isRoleMismatch =
-      (profile?.role === "THERAPIST" && host.startsWith("app.")) ||
-      (profile?.role === "CLIENT" && host.startsWith("pro."));
+      (profile?.role === "THERAPIST" && effectiveMode === "app") ||
+      (profile?.role === "CLIENT" && effectiveMode === "pro");
+
 
   // =====================================================
   // Initialize profile
