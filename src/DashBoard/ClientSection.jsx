@@ -77,6 +77,7 @@ export default function ClientsSection({ avatars }) { // Removed unused onStartC
         <CreateClientModal
           onClose={() => setShowModal(false)}
           onCreate={handleCreateClient}
+          avatars={avatars}
         />
       )}
 

@@ -25,7 +25,7 @@ export default function RoleMismatchPage({ role }) {
                     <span className="font-semibold">
             {role.toLowerCase()}
           </span>
-                    , but this portal is not available for your account.
+                    , this portal is not available for your account.
                 </p>
 
                 <p className="text-slate-500 mt-3 text-sm">

@@ -10,6 +10,7 @@ import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
 import LoginPage from "./auth/LoginPage";
 import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
+import ProfileSettingsPage from "./client/ProfileSettingsPage.jsx";
 
 export default function App() {
   const auth = useAuth();
@@ -26,7 +27,7 @@ export default function App() {
       profile?.role === "THERAPIST"
           ? "avatars"
           : profile?.role === "CLIENT"
-              ? null
+              ? "chats"
               : null;
 
   const resolvedTab = activeTab ?? defaultTab;
@@ -102,35 +103,46 @@ export default function App() {
 
         <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
 
-          {/* Therapist ONLY */}
-          {profile.role === "THERAPIST" && (
-              <div className="flex justify-center px-6">
-                <DashboardNav
-                    activeTab={resolvedTab}
-                    setActiveTab={setActiveTab}
-                    role={profile.role}
-                />
-              </div>
-          )}
+          {/* NAV — both roles */}
+          <div className="flex justify-center px-6">
+            <DashboardNav
+                activeTab={resolvedTab}
+                setActiveTab={setActiveTab}
+                role={profile.role}
+            />
+          </div>
 
-          <div className="flex justify-center mt-12 px-6">
-            {resolvedTab === "avatars" && profile.role === "THERAPIST" && (
+          <div className="flex justify-center mt-12 px-6 w-full">
+
+            {/* ================= THERAPIST ================= */}
+            {profile.role === "THERAPIST" && resolvedTab === "avatars" && (
                 <AiAvatarsSection
                     avatars={avatars}
                     setAvatars={setAvatars}
                 />
             )}
 
-            {resolvedTab === "clients" && profile.role === "THERAPIST" && (
+            {profile.role === "THERAPIST" && resolvedTab === "clients" && (
                 <ClientSection avatars={avatars} />
             )}
 
-            {/* CLIENT placeholder */}
-            {profile.role === "CLIENT" && (
+            {profile.role === "THERAPIST" && resolvedTab === "dashboard" && (
                 <div className="text-slate-500 text-lg">
-                  Client experience coming soon…
+                  Dashboard coming soon…
                 </div>
             )}
+
+            {/* ================= CLIENT ================= */}
+            {profile.role === "CLIENT" && resolvedTab === "chats" && (
+                <div className="text-slate-500 text-lg">
+                  Chat list coming soon…
+                </div>
+            )}
+
+            {profile.role === "CLIENT" && resolvedTab === "settings" && (
+                <ProfileSettingsPage />
+            )}
+
           </div>
         </main>
       </>

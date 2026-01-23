@@ -10,13 +10,11 @@ export default function ChatPage() {
   const { clientId } = useParams();
   const { state } = useLocation();
   const auth = useAuth();
-
   const [client] = useState(state?.client || null);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const bottomRef = useRef(null);
 
   /* ======================

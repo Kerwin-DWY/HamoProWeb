@@ -1,16 +1,23 @@
-import { Brain, User, BarChart3 } from "lucide-react";
+import { Brain, User, BarChart3, MessageSquare, Settings } from "lucide-react";
 
-const ALL_TABS = [
-    { key: "avatars", label: "AI Avatars", icon: Brain, modes: ["pro"] },
-    { key: "clients", label: "Clients", icon: User, modes: ["app"] },
-    { key: "history", label: "Chat History", icon: BarChart3 },
-    { key: "dashboard", label: "Dashboard", icon: BarChart3, modes: ["pro"] },
+const THERAPIST_TABS = [
+    { key: "avatars", label: "AI Avatars", icon: Brain },
+    { key: "clients", label: "Clients", icon: User },
+    { key: "dashboard", label: "Dashboard", icon: BarChart3 },
+];
 
+const CLIENT_TABS = [
+    { key: "chats", label: "Chats", icon: MessageSquare },
+    { key: "settings", label: "Settings", icon: Settings },
 ];
 
 export default function DashboardNav({ activeTab, setActiveTab, role }) {
-    // Filter tabs based on user role
-    const tabs = role === "THERAPIST" ? ALL_TABS : [];
+    const tabs =
+        role === "THERAPIST"
+            ? THERAPIST_TABS
+            : role === "CLIENT"
+                ? CLIENT_TABS
+                : [];
 
     return (
         <div className="w-full max-w-3xl px-6">

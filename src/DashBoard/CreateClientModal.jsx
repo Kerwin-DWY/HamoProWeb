@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-export default function CreateClientModal({ onClose, onCreate }) {
+export default function CreateClientModal({ onClose, onCreate, avatars}) {
   const [form, setForm] = useState({
     name: "",
     sex: "",
@@ -11,6 +11,7 @@ export default function CreateClientModal({ onClose, onCreate }) {
     cognition: "",
     goals: "",
     principles: "",
+    avatarId: "",
   });
 
   const handleChange = (key, value) => {
@@ -59,7 +60,28 @@ export default function CreateClientModal({ onClose, onCreate }) {
 
             <Input label="Age" value={form.age} onChange={(v) => handleChange("age", v)} />
 
-            <Textarea label="Emotion Pattern" value={form.emotionPattern} onChange={(v) => handleChange("emotionPattern", v)} />
+              {/* Avatar Assignment */}
+              <div>
+                  <label className="text-sm font-medium text-slate-700">
+                      Assign AI Avatar
+                  </label>
+
+                  <select
+                      value={form.avatarId}
+                      onChange={(e) => handleChange("avatarId", e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500"
+                  >
+                      <option value="">No avatar assigned</option>
+
+                      {avatars.map((avatar) => (
+                          <option key={avatar.avatarId} value={avatar.avatarId}>
+                              {avatar.name}
+                          </option>
+                      ))}
+                  </select>
+              </div>
+
+              <Textarea label="Emotion Pattern" value={form.emotionPattern} onChange={(v) => handleChange("emotionPattern", v)} />
             <Textarea label="Personality & Characteristics" value={form.personality} onChange={(v) => handleChange("personality", v)} />
             <Textarea label="Cognition Features & Beliefs" value={form.cognition} onChange={(v) => handleChange("cognition", v)} />
             <Textarea label="Therapy Goals" value={form.goals} onChange={(v) => handleChange("goals", v)} />

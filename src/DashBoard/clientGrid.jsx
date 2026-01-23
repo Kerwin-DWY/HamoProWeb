@@ -18,6 +18,7 @@ export default function ClientGrid({ clients, onDeleteClick }) {
             const result = await createInvite(auth.user.access_token, {
                 clientId: client.clientId,
                 clientName: client.name,
+                avatarId: client.avatarId,
             });
 
             setInviteClient(client);
