@@ -9,6 +9,7 @@ import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
 import LoginPage from "./auth/LoginPage";
+import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
 
 export default function App() {
   const auth = useAuth();

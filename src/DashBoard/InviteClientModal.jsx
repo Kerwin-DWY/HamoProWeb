@@ -1,13 +1,11 @@
 import { X, Copy, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
-const INVITE_CODE = "HAMO-CLIENT-2026";
-
-export default function InviteClientModal({ client, onClose }) {
+export default function InviteClientModal({ client, inviteCode, onClose }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(INVITE_CODE);
+        await navigator.clipboard.writeText(inviteCode);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -23,29 +21,28 @@ export default function InviteClientModal({ client, onClose }) {
                     <X size={20} />
                 </button>
 
-                {/* Header */}
                 <h3 className="text-xl font-bold text-slate-900">
                     Invite {client.name}
                 </h3>
                 <p className="text-sm text-slate-500 mt-1">
-                    Share this invitation code with your client to join therapy
+                    Share this invitation code with your client
                 </p>
 
-                {/* Invite Code */}
+                {/* Code */}
                 <div className="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center justify-between">
                     <div>
                         <p className="text-xs text-slate-500 uppercase tracking-wide">
                             Invitation Code
                         </p>
                         <p className="mt-1 text-lg font-mono font-semibold text-slate-900">
-                            {INVITE_CODE}
+                            {inviteCode}
                         </p>
                     </div>
 
                     <button
                         onClick={handleCopy}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl
-                       bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              bg-indigo-600 text-white hover:bg-indigo-700 transition"
                     >
                         {copied ? (
                             <>
@@ -61,10 +58,9 @@ export default function InviteClientModal({ client, onClose }) {
                     </button>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-8 text-xs text-slate-500 text-center">
-                    Clients can enter this code when signing up to connect with you
-                </div>
+                <p className="mt-6 text-xs text-slate-500 text-center">
+                    Clients can enter this code during signup to connect with you
+                </p>
             </div>
         </div>
     );
