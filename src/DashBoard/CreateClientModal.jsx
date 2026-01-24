@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 
 export default function CreateClientModal({ onClose, onCreate, avatars}) {
+   // client model
   const [form, setForm] = useState({
     name: "",
     sex: "",
@@ -11,7 +12,7 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
     cognition: "",
     goals: "",
     principles: "",
-    avatarId: "",
+    avatars: [],
   });
 
   const handleChange = (key, value) => {
@@ -58,7 +59,7 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
                 ]}
             />
 
-            <Input label="Age" value={form.age} onChange={(v) => handleChange("age", v)} />
+              <Input label="Age" value={form.age} onChange={(v) => handleChange("age", v)} />
 
               {/* Avatar Assignment */}
               <div>
@@ -67,11 +68,33 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
                   </label>
 
                   <select
-                      value={form.avatarId}
-                      onChange={(e) => handleChange("avatarId", e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500"
-                  >
-                      <option value="">No avatar assigned</option>
+                      // save selected avatar to client avatars array
+                      onChange={(e) => {
+                          const avatar = avatars.find(a => a.avatarId === e.target.value);
+                          if (!avatar) return;
+
+                          setForm(prev => {
+                              // prevent duplicate avatars
+                              const exists = prev.avatars.some(
+                                  a => a.avatarId === avatar.avatarId
+                              );
+
+                              if (exists) return prev;
+
+                              return {
+                                  ...prev,
+                                  avatars: [
+                                      ...prev.avatars,
+                                      {
+                                          avatarId: avatar.avatarId,
+                                          avatarName: avatar.name,
+                                      },
+                                  ],
+                              };
+                          });
+                      }}
+                      className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500">
+                      <option value="">Assign an avatar</option>
 
                       {avatars.map((avatar) => (
                           <option key={avatar.avatarId} value={avatar.avatarId}>

@@ -5,7 +5,7 @@ import { createClient, fetchClients, deleteClient } from "../api/lamda/clientsAp
 import { useAuth } from "react-oidc-context";
 import ClientGrid from  "./clientGrid";
 
-export default function ClientsSection({ avatars }) { // Removed unused onStartChat prop
+export default function ClientsSection({ avatars }) {
   const auth = useAuth();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,8 +67,7 @@ export default function ClientsSection({ avatars }) { // Removed unused onStartC
       ) : (
         <ClientGrid
           clients={clients}
-          avatars={avatars} 
-          // CHANGED: Removed onStartChat prop as it is no longer needed here
+          avatars={avatars}
           onDeleteClick={setClientToDelete}
         />
       )}
