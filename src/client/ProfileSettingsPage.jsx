@@ -1,16 +1,33 @@
 import { useState } from "react";
 import { Plus, QrCode, Upload } from "lucide-react";
 import InviteCodeModal from "./InviteCodeModal";
+import {acceptInvite} from "../api/lamda/acceptInvitesApi.js";
+import { useAuth } from "react-oidc-context";
+import { useUser } from "../context/UserContext";
 
 export default function ProfileSettingsPage() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [showInviteModal, setShowInviteModal] = useState(false);
+    const auth = useAuth();
+    const { chats, setChats } = useUser();
 
-    const handleInviteSubmit = (code) => {
-        console.log("Invite code entered:", code);
-        // TODO: call accept-invite API here
-        setShowInviteModal(false);
+    const handleAcceptInvite = async (code) => {
+        try {
+            const result = await acceptInvite(auth.user.access_token, code);
+
+            const newChat = {
+                clientId: result.clientId,
+                avatarId: result.avatarId,
+                clientName: result.clientName,
+                avatarName: result.avatarName,
+            };
+
+            setChats((prev) => [...prev, newChat]);
+            setShowInviteModal(false);
+        } catch (err) {
+            alert("Invalid or expired invite code");
+        }
     };
 
     return (
@@ -37,18 +54,6 @@ export default function ProfileSettingsPage() {
                         >
                             <Plus size={18} />
                             Add with Invite Code
-                        </button>
-
-                        <button
-                            className="
-                w-full flex items-center justify-center gap-2
-                border-2 border-indigo-500 text-indigo-600
-                py-3 rounded-2xl font-medium
-                hover:bg-indigo-50 transition
-              "
-                        >
-                            <QrCode size={18} />
-                            Scan QR Code
                         </button>
                     </div>
                 </section>
@@ -127,7 +132,7 @@ export default function ProfileSettingsPage() {
             {showInviteModal && (
                 <InviteCodeModal
                     onClose={() => setShowInviteModal(false)}
-                    onSubmit={handleInviteSubmit}
+                    onSubmit={handleAcceptInvite}
                 />
             )}
         </>

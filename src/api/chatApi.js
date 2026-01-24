@@ -23,9 +23,9 @@ export async function sendChatMessage(message) {
 /**
  * Load chat history from DynamoDB
  */
-export async function fetchChatHistory(token, clientId) {
+export async function fetchChatHistory(token, clientId, avatarId) {
   const res = await fetch(
-      `${API_BASE}/chat/history?clientId=${clientId}`,
+      `${API_BASE}/chat/history?clientId=${clientId}&avatarId=${avatarId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -33,27 +33,22 @@ export async function fetchChatHistory(token, clientId) {
       }
   );
 
-  if (!res.ok) {
-    throw new Error("Failed to load chat history");
-  }
-
+  if (!res.ok) throw new Error("Failed to load chat history");
   return res.json();
 }
 
 /**
  * Save one chat message
  */
-export async function saveChatMessage(token, { clientId, sender, text }) {
+export async function saveChatMessage(token, payload) {
   const res = await fetch(`${API_BASE}/chat/message`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ clientId, sender, text }),
+    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error("Failed to save message");
-  }
+  if (!res.ok) throw new Error("Failed to save message");
 }

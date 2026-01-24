@@ -37,7 +37,7 @@ root.render(
           <Route path="/callback" element={<AuthCallback />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
-          <Route path="/chat/:clientId" element={<ChatPage />} />
+          <Route path="/chat/:clientId/:avatarId" element={<ChatPage />} />
           <Route path="/*" element={<App />} />
         </Routes>
       </UserProvider>

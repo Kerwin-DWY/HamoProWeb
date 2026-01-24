@@ -51,6 +51,7 @@ export async function createClient(accessToken, client) {
       sex: client.sex,
       age: client.age,
       avatars: client.avatars,
+      selectedAvatarId: client.selectedAvatarId,
       emotionPattern: client.emotionPattern,
       personality: client.personality,
       cognition: client.cognition,

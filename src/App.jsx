@@ -11,6 +11,7 @@ import ClientSection from "./DashBoard/ClientSection";
 import LoginPage from "./auth/LoginPage";
 import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
 import ProfileSettingsPage from "./client/ProfileSettingsPage.jsx";
+import ChatsList from "./client/ChatsList.jsx";
 
 export default function App() {
   const auth = useAuth();
@@ -19,6 +20,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(null);
   const mode = getAppMode(); // "pro" | "app"
   const host = window.location.hostname;
+
+  // for Query in DB, remove in production
+  useEffect(() => {
+    if (!auth.user) return;
+
+    console.log("🔑 Cognito user sub:", auth.user.profile?.sub);
+  }, [auth.user]);
 
   // =====================================================
   // Derived default tab
@@ -65,13 +73,13 @@ export default function App() {
   }, [auth.user, profile, mode, setProfile]);
 
   // =====================================================
-  // Fetch avatars
+  // Fetch therapist's avatars
   // =====================================================
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
     fetchAvatars(auth.user.access_token)
-        .then(setAvatars)
+        .then(setAvatars)// save in avatars state
         .catch(console.error);
   }, [auth.user]);
 
@@ -134,9 +142,7 @@ export default function App() {
 
             {/* ================= CLIENT ================= */}
             {profile.role === "CLIENT" && resolvedTab === "chats" && (
-                <div className="text-slate-500 text-lg">
-                  Chat list coming soon…
-                </div>
+                <ChatsList />
             )}
 
             {profile.role === "CLIENT" && resolvedTab === "settings" && (

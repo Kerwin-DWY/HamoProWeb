@@ -1,13 +1,13 @@
 const API_BASE = "https://8ys1hr8ne0.execute-api.ap-east-1.amazonaws.com";
 
-export async function createInvite(accessToken, { clientId, clientName, avatarId }) {
+export async function createInvite(accessToken, { clientId, clientName, avatarId,avatarName }) {
     const res = await fetch(`${API_BASE}/invites`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ clientId, clientName, avatarId }),
+        body: JSON.stringify({ clientId, clientName, avatarId, avatarName }),
     });
 
     if (!res.ok) {

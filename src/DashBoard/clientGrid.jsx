@@ -9,25 +9,35 @@ export default function ClientGrid({ clients, onDeleteClick }) {
 
     const [inviteClient, setInviteClient] = useState(null);
     const [inviteCode, setInviteCode] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loadingId, setLoadingId] = useState(null);
 
     const handleInvite = async (client) => {
+        setLoadingId(client.clientId);
+        const avatar = client.avatars.find(
+            a => a.avatarId === client.selectedAvatarId
+        );
+
+        if (!avatar) {
+            alert("Selected avatar not found");
+            return;
+        }
+
         try {
-            setLoading(true);
 
             const result = await createInvite(auth.user.access_token, {
                 clientId: client.clientId,
                 clientName: client.name,
-                avatarId: client.avatarId,
+                avatarId: avatar.avatarId,
+                avatarName: avatar.avatarName,
             });
 
-            setInviteClient(client);
+            setInviteClient({ ...client, avatar });
             setInviteCode(result.inviteCode);
         } catch (err) {
             console.error(err);
             alert("Failed to generate invite");
         } finally {
-            setLoading(false);
+            setLoadingId(null);
         }
     };
 
@@ -67,15 +77,16 @@ export default function ClientGrid({ clients, onDeleteClick }) {
 
                         {/* INVITE */}
                         <button
-                            disabled={loading}
+                            disabled={loadingId === client.clientId}
                             onClick={() => handleInvite(client)}
                             className="mt-6 w-full flex items-center justify-center gap-2
-                bg-indigo-600 text-white py-2.5 rounded-xl
-                hover:bg-indigo-700 transition shadow disabled:opacity-60"
+                                     bg-indigo-600 text-white py-2.5 rounded-xl
+                                     hover:bg-indigo-700 transition shadow disabled:opacity-60"
                         >
                             <Mail size={16} />
-                            {loading ? "Generating…" : "Invite Client"}
+                            {loadingId === client.clientId ? "Generating…" : "Invite Client"}
                         </button>
+
                     </div>
                 ))}
             </div>

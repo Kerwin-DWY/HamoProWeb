@@ -39,11 +39,11 @@ export default function InviteCodeModal({ onClose, onSubmit }) {
                         onChange={(e) => setCode(e.target.value)}
                         placeholder="HAMO-XXXXXX"
                         className="
-              w-full rounded-xl px-4 py-3
-              border border-slate-300
-              font-mono tracking-wide
-              focus:outline-none focus:ring-2 focus:ring-indigo-500
-            "
+                          w-full rounded-xl px-4 py-3
+                          border border-slate-300
+                          font-mono tracking-wide
+                          focus:outline-none focus:ring-2 focus:ring-indigo-500
+                        "
                     />
                 </div>
 
@@ -59,8 +59,8 @@ export default function InviteCodeModal({ onClose, onSubmit }) {
                     <button
                         onClick={handleSubmit}
                         className="flex-1 flex items-center justify-center gap-2
-              bg-indigo-600 text-white py-3 rounded-xl
-              hover:bg-indigo-700 transition shadow-lg"
+                                  bg-indigo-600 text-white py-3 rounded-xl
+                                  hover:bg-indigo-700 transition shadow-lg"
                     >
                         <Check size={16} />
                         Connect

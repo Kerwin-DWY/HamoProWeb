@@ -7,7 +7,6 @@ import {cleanAIText, chunkIntoMessages,} from "../utils/chatTextUtils";
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const { clientId } = useParams();
   const { state } = useLocation();
   const auth = useAuth();
   const [client] = useState(state?.client || null);
@@ -16,6 +15,7 @@ export default function ChatPage() {
   const [isThinking, setIsThinking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const bottomRef = useRef(null);
+  const { clientId, avatarId } = useParams(); // uniquely identifies one chat instance
 
   /* ======================
      AUTO SCROLL
@@ -36,7 +36,8 @@ export default function ChatPage() {
       try {
         const history = await fetchChatHistory(
             auth.user.access_token,
-            clientId
+            clientId,
+            avatarId
         );
 
         if (cancelled) return;
@@ -95,6 +96,9 @@ export default function ChatPage() {
       // Save user message
       await saveChatMessage(token, {
         clientId,
+        clientName: client.clientName,
+        avatarId,
+        avatarName: client.avatarName,
         sender: "user",
         text: userMessage.text,
       });

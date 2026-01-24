@@ -13,6 +13,7 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
     goals: "",
     principles: "",
     avatars: [],
+    selectedAvatarId: "",
   });
 
   const handleChange = (key, value) => {
@@ -21,6 +22,10 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
 
   const handleSubmit = () => {
     if (!form.name) return;
+      if (!form.selectedAvatarId || form.avatars.length === 0) {
+          alert("Please assign an avatar before creating the client");
+          return;
+      }
     onCreate(form);
   };
 
@@ -68,32 +73,28 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
                   </label>
 
                   <select
-                      // save selected avatar to client avatars array
+                      value={form.selectedAvatarId}
                       onChange={(e) => {
-                          const avatar = avatars.find(a => a.avatarId === e.target.value);
+                          const avatarId = e.target.value;
+                          const avatar = avatars.find(a => a.avatarId === avatarId);
                           if (!avatar) return;
 
-                          setForm(prev => {
-                              // prevent duplicate avatars
-                              const exists = prev.avatars.some(
-                                  a => a.avatarId === avatar.avatarId
-                              );
+                          setForm(prev => ({
+                              ...prev,
 
-                              if (exists) return prev;
+                              selectedAvatarId: avatar.avatarId,
 
-                              return {
-                                  ...prev,
-                                  avatars: [
-                                      ...prev.avatars,
-                                      {
-                                          avatarId: avatar.avatarId,
-                                          avatarName: avatar.name,
-                                      },
-                                  ],
-                              };
-                          });
+                              //  keep avatars as array
+                              avatars: [
+                                  {
+                                      avatarId: avatar.avatarId,
+                                      avatarName: avatar.name,
+                                  },
+                              ],
+                          }));
                       }}
-                      className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500">
+                      className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500"
+                  >
                       <option value="">Assign an avatar</option>
 
                       {avatars.map((avatar) => (
@@ -102,6 +103,7 @@ export default function CreateClientModal({ onClose, onCreate, avatars}) {
                           </option>
                       ))}
                   </select>
+
               </div>
 
               <Textarea label="Emotion Pattern" value={form.emotionPattern} onChange={(v) => handleChange("emotionPattern", v)} />
