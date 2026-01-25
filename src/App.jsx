@@ -1,14 +1,14 @@
-import { useAuth } from "react-oidc-context";
 import { useEffect, useState } from "react";
+import { useAuth } from "./auth/AuthProvider";
 import { useUser } from "./context/UserContext";
-import {getAppMode, getLocalModeOverride} from "./utils/appMode";
+import { getAppMode, getLocalModeOverride } from "./utils/appMode";
 import { initUserProfile } from "./api/userApi";
 import { fetchAvatars } from "./api/lamda/avatarsApi.js";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
-import LoginPage from "./auth/LoginPage";
+import CustomLoginPage from "./auth/CustomLoginPage";
 import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
 import ProfileSettingsPage from "./client/ProfileSettingsPage.jsx";
 import ChatsList from "./client/ChatsList.jsx";
@@ -26,17 +26,20 @@ export default function App() {
     if (!auth.user) return;
 
     console.log("🔑 Cognito user sub:", auth.user.profile?.sub);
+    console.log("🔑 Token Issuer (iss):", auth.user.profile?.iss);
+    console.log("🔑 Token Audience (aud):", auth.user.profile?.aud);
+    console.log("🔑 Access Token:", auth.user.access_token);
   }, [auth.user]);
 
   // =====================================================
   // Derived default tab
   // =====================================================
   const defaultTab =
-      profile?.role === "THERAPIST"
-          ? "avatars"
-          : profile?.role === "CLIENT"
-              ? "chats"
-              : null;
+    profile?.role === "THERAPIST"
+      ? "avatars"
+      : profile?.role === "CLIENT"
+        ? "chats"
+        : null;
 
   const resolvedTab = activeTab ?? defaultTab;
 
@@ -48,28 +51,36 @@ export default function App() {
   const isLocalhost = host === "localhost";
 
   const effectiveMode = isLocalhost
-      ? localMode
-      : host.startsWith("pro.")
-          ? "pro"
-          : host.startsWith("app.")
-              ? "app"
-              : null;
+    ? localMode
+    : host.startsWith("pro.")
+      ? "pro"
+      : host.startsWith("app.")
+        ? "app"
+        : null;
 
   const isRoleMismatch =
-      (profile?.role === "THERAPIST" && effectiveMode === "app") ||
-      (profile?.role === "CLIENT" && effectiveMode === "pro");
+    (profile?.role === "THERAPIST" && effectiveMode === "app") ||
+    (profile?.role === "CLIENT" && effectiveMode === "pro");
 
 
   // =====================================================
   // Initialize profile
   // =====================================================
+  const [initError, setInitError] = useState(null);
+
   useEffect(() => {
     if (!auth.user?.access_token) return;
     if (profile) return;
 
+    // Clear prev error
+    setInitError(null);
+
     initUserProfile({ token: auth.user.access_token, mode })
-        .then(setProfile)
-        .catch(console.error);
+      .then(setProfile)
+      .catch((err) => {
+        console.error("Profile init error:", err);
+        setInitError(err);
+      });
   }, [auth.user, profile, mode, setProfile]);
 
   // =====================================================
@@ -79,8 +90,8 @@ export default function App() {
     if (!auth.user?.access_token) return;
 
     fetchAvatars(auth.user.access_token)
-        .then(setAvatars)// save in avatars state
-        .catch(console.error);
+      .then(setAvatars)// save in avatars state
+      .catch(console.error);
   }, [auth.user]);
 
   // =====================================================
@@ -91,7 +102,24 @@ export default function App() {
   }
 
   if (!auth.isAuthenticated) {
-    return <LoginPage />;
+    return <CustomLoginPage mode={effectiveMode} />;
+  }
+
+  if (initError) {
+    return (
+      <CenteredText>
+        <div className="flex flex-col items-center">
+          <p className="text-red-500 mb-2 font-medium">Initialization Failed</p>
+          <p className="text-sm text-slate-500 mb-6 max-w-md text-center">{initError.message || "Unknown error occurred"}</p>
+          <button
+            onClick={() => auth.signOut()} // Allow user to logout and retry
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition"
+          >
+            Sign Out
+          </button>
+        </div>
+      </CenteredText>
+    );
   }
 
   if (!profile) {
@@ -106,59 +134,59 @@ export default function App() {
   // UI
   // =====================================================
   return (
-      <>
-        <Header role={profile.role} />
+    <>
+      <Header role={profile.role} />
 
-        <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+      <main className="pt-[96px] min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
 
-          {/* NAV — both roles */}
-          <div className="flex justify-center px-6">
-            <DashboardNav
-                activeTab={resolvedTab}
-                setActiveTab={setActiveTab}
-                role={profile.role}
+        {/* NAV — both roles */}
+        <div className="flex justify-center px-6">
+          <DashboardNav
+            activeTab={resolvedTab}
+            setActiveTab={setActiveTab}
+            role={profile.role}
+          />
+        </div>
+
+        <div className="flex justify-center mt-12 px-6 w-full">
+
+          {/* ================= THERAPIST ================= */}
+          {profile.role === "THERAPIST" && resolvedTab === "avatars" && (
+            <AiAvatarsSection
+              avatars={avatars}
+              setAvatars={setAvatars}
             />
-          </div>
+          )}
 
-          <div className="flex justify-center mt-12 px-6 w-full">
+          {profile.role === "THERAPIST" && resolvedTab === "clients" && (
+            <ClientSection avatars={avatars} />
+          )}
 
-            {/* ================= THERAPIST ================= */}
-            {profile.role === "THERAPIST" && resolvedTab === "avatars" && (
-                <AiAvatarsSection
-                    avatars={avatars}
-                    setAvatars={setAvatars}
-                />
-            )}
+          {profile.role === "THERAPIST" && resolvedTab === "dashboard" && (
+            <div className="text-slate-500 text-lg">
+              Dashboard coming soon…
+            </div>
+          )}
 
-            {profile.role === "THERAPIST" && resolvedTab === "clients" && (
-                <ClientSection avatars={avatars} />
-            )}
+          {/* ================= CLIENT ================= */}
+          {profile.role === "CLIENT" && resolvedTab === "chats" && (
+            <ChatsList />
+          )}
 
-            {profile.role === "THERAPIST" && resolvedTab === "dashboard" && (
-                <div className="text-slate-500 text-lg">
-                  Dashboard coming soon…
-                </div>
-            )}
+          {profile.role === "CLIENT" && resolvedTab === "settings" && (
+            <ProfileSettingsPage />
+          )}
 
-            {/* ================= CLIENT ================= */}
-            {profile.role === "CLIENT" && resolvedTab === "chats" && (
-                <ChatsList />
-            )}
-
-            {profile.role === "CLIENT" && resolvedTab === "settings" && (
-                <ProfileSettingsPage />
-            )}
-
-          </div>
-        </main>
-      </>
+        </div>
+      </main>
+    </>
   );
 }
 
 function CenteredText({ children }) {
   return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400">
-        {children}
-      </div>
+    <div className="min-h-screen flex items-center justify-center text-slate-400">
+      {children}
+    </div>
   );
 }
