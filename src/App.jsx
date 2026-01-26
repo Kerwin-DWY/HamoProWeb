@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./auth/AuthProvider";
 import { useUser } from "./context/UserContext";
 import { getAppMode, getLocalModeOverride } from "./utils/appMode";
-import { initUserProfile } from "./api/userApi";
+import { initUserProfile } from "./api/lamda/userApi.js";
 import { fetchAvatars } from "./api/lamda/avatarsApi.js";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
@@ -25,7 +25,9 @@ export default function App() {
   useEffect(() => {
     if (!auth.user) return;
 
-    console.log("🔑 Cognito user sub:", auth.user.profile?.sub);
+    console.log("ACCESS TOKEN:", auth.user.access_token);
+    console.log("ID TOKEN:", auth.user.id_token);
+    console.log("Cognito user sub:", auth.user.profile?.sub);
   }, [auth.user]);
 
   // =====================================================
@@ -47,13 +49,7 @@ export default function App() {
   const localMode = getLocalModeOverride();
   const isLocalhost = host === "localhost";
 
-  const effectiveMode = isLocalhost
-    ? localMode
-    : host.startsWith("pro.")
-      ? "pro"
-      : host.startsWith("app.")
-        ? "app"
-        : null;
+  const effectiveMode = isLocalhost ? localMode : host.startsWith("pro.") ? "pro" : host.startsWith("app.") ? "app" : null;
 
   const isRoleMismatch =
     (profile?.role === "THERAPIST" && effectiveMode === "app") ||
@@ -65,19 +61,18 @@ export default function App() {
   // =====================================================
   const [initError, setInitError] = useState(null);
 
+  // App.jsx - Line 81 approx.
   useEffect(() => {
     if (!auth.user?.access_token) return;
     if (profile) return;
 
-    // Clear prev error
-    setInitError(null);
-
-    initUserProfile({ token: auth.user.id_token, mode })
-      .then(setProfile)
-      .catch((err) => {
-        console.error("Profile init error:", err);
-        setInitError(err);
-      });
+    // Change auth.access_token to auth.user.access_token
+    initUserProfile({ authToken: auth.user.access_token, mode })
+        .then(setProfile)
+        .catch((err) => {
+          console.error("Profile init error:", err);
+          setInitError(err);
+        });
   }, [auth.user, profile, mode, setProfile]);
 
   // =====================================================
@@ -86,9 +81,9 @@ export default function App() {
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
-    fetchAvatars(auth.user.id_token)
-      .then(setAvatars)// save in avatars state
-      .catch(console.error);
+    fetchAvatars(auth.user.access_token)
+        .then(setAvatars)// save in avatars state
+        .catch(console.error);
   }, [auth.user]);
 
   // =====================================================

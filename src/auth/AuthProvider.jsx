@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
 
         try {
             const decodedId = idToken ? jwtDecode(idToken) : {};
-            // We can also decode access token if needed, but ID token usually has the profile info
+            // Can also decode access token if needed, but ID token usually has the profile info
 
             return {
                 access_token: accessToken,

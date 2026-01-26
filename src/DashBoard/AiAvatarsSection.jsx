@@ -3,8 +3,10 @@ import { Plus, Sparkles } from "lucide-react";
 import CreateAvatarModal from "./CreateAvatarModal";
 import { createAvatar, deleteAvatar } from "../api/lamda/avatarsApi.js";
 import { X } from "lucide-react";
+import {useAuth} from "../auth/AuthProvider.jsx";
 
 export default function AiAvatarsSection({ avatars, setAvatars }) {
+  const auth = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
 
