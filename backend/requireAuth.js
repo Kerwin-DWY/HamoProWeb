@@ -24,7 +24,7 @@ export async function requireAuth(req, res, next) {
             issuer,
         });
 
-        if (payload.token_use !== "access") {
+        if (payload.token_use !== "id") {
             return res.status(401).json({
                 error: "Invalid token type (access token required)",
             });

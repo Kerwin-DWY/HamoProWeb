@@ -26,9 +26,6 @@ export default function App() {
     if (!auth.user) return;
 
     console.log("🔑 Cognito user sub:", auth.user.profile?.sub);
-    console.log("🔑 Token Issuer (iss):", auth.user.profile?.iss);
-    console.log("🔑 Token Audience (aud):", auth.user.profile?.aud);
-    console.log("🔑 Access Token:", auth.user.access_token);
   }, [auth.user]);
 
   // =====================================================
@@ -75,7 +72,7 @@ export default function App() {
     // Clear prev error
     setInitError(null);
 
-    initUserProfile({ token: auth.user.access_token, mode })
+    initUserProfile({ token: auth.user.id_token, mode })
       .then(setProfile)
       .catch((err) => {
         console.error("Profile init error:", err);
@@ -89,7 +86,7 @@ export default function App() {
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
-    fetchAvatars(auth.user.access_token)
+    fetchAvatars(auth.user.id_token)
       .then(setAvatars)// save in avatars state
       .catch(console.error);
   }, [auth.user]);
