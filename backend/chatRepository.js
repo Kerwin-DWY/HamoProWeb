@@ -5,7 +5,7 @@ import {
     QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient({ region: "ap-east-1" });
+const client = new DynamoDBClient({});
 export const ddb = DynamoDBDocumentClient.from(client);
 
 /**

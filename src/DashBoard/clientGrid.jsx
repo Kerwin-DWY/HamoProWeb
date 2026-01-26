@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Mail } from "lucide-react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "../auth/AuthProvider";
 import InviteClientModal from "./InviteClientModal";
 import { createInvite } from "../api/lamda/invitesApi";
 

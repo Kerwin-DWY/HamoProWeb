@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Brain, QrCode } from "lucide-react";
-import { signIn, signUp, confirmSignUp } from "./authApi";
+import { signIn, signUp, confirmSignUp } from "../api/authApi.js";
+import { acceptInvite } from "../api/lamda/acceptInvitesApi.js";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
@@ -33,6 +34,17 @@ export default function CustomLoginPage({ mode }) { // mode: "app" | "pro"
 
             // Update global auth state
             authSignIn(result);
+
+            // If CLIENT and has invite code, accept it now
+            if (role === "CLIENT" && inviteCode) {
+                try {
+                    await acceptInvite(result.AuthenticationResult.AccessToken, inviteCode);
+                } catch (inviteErr) {
+                    console.error("Invite acceptance failed", inviteErr);
+                    alert("Account created, but failed to accept invite: " + inviteErr.message);
+                }
+            }
+
             navigate("/");
         } catch (err) {
             console.error(err);
@@ -52,9 +64,7 @@ export default function CustomLoginPage({ mode }) { // mode: "app" | "pro"
                     return;
                 }
 
-                // TODO: validate inviteCode via your API (CLIENT only)
-                // if (role === "CLIENT") await validateInviteCode(inviteCode);
-
+                // Invite code will be processed after confirmation & login
                 await signUp({ email, password });
                 alert("Account created! Please check your email for the verification code.");
                 setAuthMode("confirm");

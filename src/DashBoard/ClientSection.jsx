@@ -2,8 +2,8 @@ import { useState, useEffect } from "react"; // Combined imports
 import { Plus, Users } from "lucide-react";
 import CreateClientModal from "./CreateClientModal";
 import { createClient, fetchClients, deleteClient } from "../api/lamda/clientsApi.js";
-import { useAuth } from "react-oidc-context";
-import ClientGrid from  "./clientGrid";
+import { useAuth } from "../auth/AuthProvider";
+import ClientGrid from "./clientGrid";
 
 export default function ClientsSection({ avatars }) {
   const auth = useAuth();

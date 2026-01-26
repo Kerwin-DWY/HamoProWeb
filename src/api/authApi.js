@@ -1,5 +1,5 @@
 import { SignUpCommand, InitiateAuthCommand, ConfirmSignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
-import { cognitoClient, CLIENT_ID } from "./cognitoClient";
+import { cognitoClient, CLIENT_ID } from "../auth/cognitoClient.js";
 
 // =====================
 // SIGN UP

@@ -5,7 +5,7 @@ import {
     PutCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient({ region: "ap-east-1" });
+const client = new DynamoDBClient({});
 const ddb = DynamoDBDocumentClient.from(client);
 
 const TABLE = "HamoPro";
