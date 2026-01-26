@@ -1,8 +1,11 @@
 import { Brain, LogOut } from "lucide-react";
+import { useAuth } from "./auth/AuthProvider";
 
 export default function Header({ role }) {
-    const signOut = () => {
-        window.location.href = "/logout";
+    const { signOut } = useAuth();
+
+    const handleSignOut = () => {
+        signOut();
     };
 
     return (
@@ -25,7 +28,7 @@ export default function Header({ role }) {
             {/* RIGHT */}
             <div className="ml-auto">
                 <button
-                    onClick={signOut}
+                    onClick={handleSignOut}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl
                      text-slate-600 hover:text-slate-900
                      hover:bg-slate-100 transition"

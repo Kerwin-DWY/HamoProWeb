@@ -199,13 +199,6 @@ export default function CustomLoginPage({ mode }) { // mode: "app" | "pro"
                     </button>
                 )}
 
-                {/* QR */}
-                {authMode !== "confirm" && (
-                    <button className="mt-4 w-full border border-indigo-500 text-indigo-600 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors">
-                        <QrCode size={18} /> Scan QR Code
-                    </button>
-                )}
-
                 <p className="mt-6 text-center text-xs text-slate-400">
                     Version 1.0.1
                 </p>
