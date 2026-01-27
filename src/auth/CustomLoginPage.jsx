@@ -8,7 +8,6 @@ import { useAuth } from "./AuthProvider";
 export default function CustomLoginPage({ mode }) { // mode: "app" | "pro"
     const navigate = useNavigate();
     const { signIn: authSignIn } = useAuth();
-
     const [authMode, setAuthMode] = useState("signin"); // signin | signup | confirm
     const lockedRole = mode === "pro" ? "THERAPIST" : "CLIENT";
     const [role, setRole] = useState(lockedRole);

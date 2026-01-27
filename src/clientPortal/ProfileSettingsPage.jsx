@@ -46,10 +46,10 @@ export default function ProfileSettingsPage() {
                         <button
                             onClick={() => setShowInviteModal(true)}
                             className="
-                w-full flex items-center justify-center gap-2
-                border-2 border-indigo-500 text-indigo-600
-                py-3 rounded-2xl font-medium
-                hover:bg-indigo-50 transition
+                            w-full flex items-center justify-center gap-2
+                            border-2 border-indigo-500 text-indigo-600
+                            py-3 rounded-2xl font-medium
+                            hover:bg-indigo-50 transition
               "
                         >
                             <Plus size={18} />
@@ -70,23 +70,23 @@ export default function ProfileSettingsPage() {
                     <div className="flex items-center gap-6 mb-8">
                         <div
                             className="
-                w-20 h-20 rounded-full
-                bg-gradient-to-br from-indigo-400 to-purple-500
-                flex items-center justify-center
-                text-white text-3xl font-semibold
-              "
+                            w-20 h-20 rounded-full
+                            bg-gradient-to-br from-indigo-400 to-purple-500
+                            flex items-center justify-center
+                            text-white text-3xl font-semibold
+                            "
                         >
                             K
                         </div>
 
                         <button
                             className="
-                flex items-center gap-2
-                px-5 py-2 rounded-xl
-                border border-slate-300
-                text-slate-700
-                hover:bg-slate-100 transition
-              "
+                            flex items-center gap-2
+                            px-5 py-2 rounded-xl
+                            border border-slate-300
+                            text-slate-700
+                            hover:bg-slate-100 transition
+                              "
                         >
                             <Upload size={16} />
                             Change Avatar
@@ -95,7 +95,6 @@ export default function ProfileSettingsPage() {
 
                     {/* Form */}
                     <div className="space-y-6">
-                        <Input label="Nickname" />
                         <Input label="Email" />
 
                         <PasswordInput
@@ -112,13 +111,13 @@ export default function ProfileSettingsPage() {
 
                         <button
                             className="
-                w-full mt-6
-                bg-indigo-600 text-white
-                py-3 rounded-2xl
-                font-medium
-                hover:bg-indigo-700
-                transition shadow-lg
-              "
+                            w-full mt-6
+                            bg-indigo-600 text-white
+                            py-3 rounded-2xl
+                            font-medium
+                            hover:bg-indigo-700
+                            transition shadow-lg
+                          "
                         >
                             Save Changes
                         </button>
@@ -153,10 +152,10 @@ function Input({ label, value, disabled }) {
                 value={value}
                 disabled={disabled}
                 className={`
-          w-full rounded-xl px-4 py-2.5
-          border border-slate-300
-          ${disabled ? "bg-slate-100 text-slate-400" : ""}
-          focus:outline-none focus:ring-2 focus:ring-indigo-500
+                  w-full rounded-xl px-4 py-2.5
+                  border border-slate-300
+                  ${disabled ? "bg-slate-100 text-slate-400" : ""}
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
         `}
             />
         </div>
@@ -174,10 +173,10 @@ function PasswordInput({ label, value, onChange }) {
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 className="
-          w-full rounded-xl px-4 py-2.5
-          border border-slate-300
-          focus:outline-none focus:ring-2 focus:ring-indigo-500
-        "
+                  w-full rounded-xl px-4 py-2.5
+                  border border-slate-300
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
             />
         </div>
     );

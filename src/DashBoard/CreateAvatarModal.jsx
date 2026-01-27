@@ -1,13 +1,9 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { createEmptyAvatar } from "../models/avatarModel";
 
 export default function CreateAvatarModal({ onClose, onCreate }) {
-  const [form, setForm] = useState({
-    name: "",
-    theory: "",
-    methodology: "",
-    principles: "",
-  });
+  const [form, setForm] = useState(createEmptyAvatar());
 
   const handleSubmit = () => {
     if (!form.name.trim()) return;

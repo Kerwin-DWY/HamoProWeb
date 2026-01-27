@@ -1,33 +1,22 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { createEmptyClient } from "../models/clientModel";
 
 export default function CreateClientModal({ onClose, onCreate, avatars}) {
-   // client model
-  const [form, setForm] = useState({
-    name: "",
-    sex: "",
-    age: "",
-    emotionPattern: "",
-    personality: "",
-    cognition: "",
-    goals: "",
-    principles: "",
-    avatars: [],
-    selectedAvatarId: "",
-  });
+    const [form, setForm] = useState(createEmptyClient());
 
-  const handleChange = (key, value) => {
+    const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
+    };
 
-  const handleSubmit = () => {
-    if (!form.name) return;
-      if (!form.selectedAvatarId || form.avatars.length === 0) {
-          alert("Please assign an avatar before creating the client");
-          return;
-      }
-    onCreate(form);
-  };
+    const handleSubmit = () => {
+        if (!form.name) return;
+          if (!form.selectedAvatarId || form.avatars.length === 0) {
+              alert("Please assign an avatar before creating the clientPortal");
+              return;
+          }
+        onCreate(form);
+    };
 
   return (
       <div className="fixed inset-0 z-50 flex justify-center bg-black/40 pt-[120px]">

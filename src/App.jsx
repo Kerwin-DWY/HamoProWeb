@@ -9,8 +9,8 @@ import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
 import CustomLoginPage from "./auth/CustomLoginPage";
 import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
-import ProfileSettingsPage from "./client/ProfileSettingsPage.jsx";
-import ChatsList from "./client/ChatsList.jsx";
+import ProfileSettingsPage from "./clientPortal/ProfileSettingsPage.jsx";
+import ChatsList from "./clientPortal/ChatsList.jsx";
 
 export default function App({ portal }) {
   const auth = useAuth();
@@ -19,7 +19,7 @@ export default function App({ portal }) {
   const [activeTab, setActiveTab] = useState(null);
   const effectiveMode = portal; // SINGLE SOURCE OF TRUTH
 
-  // for Query in DB, remove in production
+  // for Query in DB and debugging, remove in production
   useEffect(() => {
     if (!auth.user) return;
 
@@ -40,8 +40,8 @@ export default function App({ portal }) {
 
   const resolvedTab = activeTab ?? defaultTab;
 
-    // =====================================================
-    // Role mismatch detection
+  // =====================================================
+  // Role mismatch detection
   const isRoleMismatch =
     (profile?.role === "THERAPIST" && effectiveMode === "app") ||
     (profile?.role === "CLIENT" && effectiveMode === "pro");
