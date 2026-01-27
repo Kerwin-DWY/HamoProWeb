@@ -54,7 +54,6 @@ export default function App({ portal }) {
 
   useEffect(() => {
     if (!auth.user?.access_token) return;
-    if (profile) return;
 
     initUserProfile({
       authToken: auth.user.access_token,
