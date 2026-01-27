@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Brain, QrCode } from "lucide-react";
+import { Brain} from "lucide-react";
 import { signIn, signUp, confirmSignUp } from "../api/authApi.js";
 import { acceptInvite } from "../api/lamda/acceptInvitesApi.js";
 import { useNavigate } from "react-router-dom";

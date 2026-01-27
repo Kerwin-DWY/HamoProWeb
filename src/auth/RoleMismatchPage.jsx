@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthProvider";
 
 export default function RoleMismatchPage({ role }) {
     const navigate = useNavigate();
+    const { signOut } = useAuth();
 
     const isTherapist = role === "THERAPIST";
 
@@ -22,10 +24,8 @@ export default function RoleMismatchPage({ role }) {
 
                 <p className="text-slate-600 leading-relaxed">
                     You are signed in as a{" "}
-                    <span className="font-semibold">
-            {role.toLowerCase()}
-          </span>
-                    , this portal is not available for your account.
+                    <span className="font-semibold">{role.toLowerCase()}</span>,
+                    this portal is not available for your account.
                 </p>
 
                 <p className="text-slate-500 mt-3 text-sm">
@@ -36,19 +36,22 @@ export default function RoleMismatchPage({ role }) {
                 <a
                     href={targetDomain}
                     className="mt-8 inline-flex items-center justify-center
-            w-full rounded-xl bg-indigo-600 text-white
-            py-3 font-medium hover:bg-indigo-700 transition"
+                               w-full rounded-xl bg-indigo-600 text-white
+                               py-3 font-medium hover:bg-indigo-700 transition"
                 >
                     Go to {targetLabel}
                 </a>
 
                 {/* Logout action */}
                 <button
-                    onClick={() => navigate("/logout")}
+                    onClick={() => {
+                        signOut();
+                        navigate("/login", { replace: true });
+                    }}
                     className="mt-4 w-full rounded-xl
-            border border-slate-300 py-3
-            text-slate-700 font-medium
-            hover:bg-slate-100 transition"
+                               border border-slate-300 py-3
+                               text-slate-700 font-medium
+                               hover:bg-slate-100 transition"
                 >
                     Log out
                 </button>
