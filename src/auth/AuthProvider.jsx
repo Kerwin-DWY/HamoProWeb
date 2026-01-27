@@ -3,18 +3,21 @@ import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export function AuthProvider({ children, mode }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Helper to construct the user object expected by the app
+    // portal-aware storage key
+    const storageKey = useCallback(
+        (key) => `${mode}.${key}`,
+        [mode]
+    );
+
     const constructUser = useCallback((accessToken, idToken) => {
         if (!accessToken) return null;
 
         try {
             const decodedId = idToken ? jwtDecode(idToken) : {};
-            // Can also decode access token if needed, but ID token usually has the profile info
-
             return {
                 access_token: accessToken,
                 id_token: idToken,
@@ -24,64 +27,78 @@ export function AuthProvider({ children }) {
                     ...decodedId,
                 },
             };
-        } catch (e) {
-            console.error("Failed to decode token", e);
+        } catch (err) {
+            console.error("JWT decode failed", err);
             return null;
         }
     }, []);
 
-    // Initialize auth state from local storage
+    // ============================
+    // Init from portal storage
+    // ============================
     useEffect(() => {
-        const accessToken = localStorage.getItem("accessToken");
-        const idToken = localStorage.getItem("idToken");
-        const refreshToken = localStorage.getItem("refreshToken");
+        if (!mode) {
+            setIsLoading(false);
+            return;
+        }
+
+        const accessToken = localStorage.getItem(storageKey("accessToken"));
+        const idToken = localStorage.getItem(storageKey("idToken"));
 
         if (accessToken) {
             const userObj = constructUser(accessToken, idToken);
             if (userObj) {
                 setUser(userObj);
             } else {
-                // Token might be invalid
                 signOut();
             }
         }
+
         setIsLoading(false);
-    }, [constructUser]);
+    }, [mode, storageKey, constructUser]);
 
+    // ============================
+    // Sign in (portal scoped)
+    // ============================
     const signIn = useCallback((authResult) => {
-        const accessToken = authResult.AuthenticationResult.AccessToken;
-        const idToken = authResult.AuthenticationResult.IdToken;
-        const refreshToken = authResult.AuthenticationResult.RefreshToken;
+            const { AccessToken, IdToken, RefreshToken } =
+                authResult.AuthenticationResult;
 
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("idToken", idToken);
-        if (refreshToken) {
-            localStorage.setItem("refreshToken", refreshToken);
-        }
+            localStorage.setItem(storageKey("accessToken"), AccessToken);
+            localStorage.setItem(storageKey("idToken"), IdToken);
 
-        const userObj = constructUser(accessToken, idToken);
-        setUser(userObj);
-    }, [constructUser]);
+            if (RefreshToken) {
+                localStorage.setItem(storageKey("refreshToken"), RefreshToken);
+            }
 
+            setUser(constructUser(AccessToken, IdToken));
+        },
+        [storageKey, constructUser]
+    );
+
+    // ============================
+    // Sign out (portal scoped)
+    // ============================
     const signOut = useCallback(() => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("idToken");
-        localStorage.removeItem("refreshToken");
+        localStorage.removeItem(storageKey("accessToken"));
+        localStorage.removeItem(storageKey("idToken"));
+        localStorage.removeItem(storageKey("refreshToken"));
         setUser(null);
-    }, []);
+    }, [storageKey]);
 
-    // Check token expiration periodically or on usage could be added here
-    // For now, we rely on the initial load and explicit sign in/out
-
-    const value = {
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        signIn,
-        signOut,
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                isLoading,
+                isAuthenticated: !!user,
+                signIn,
+                signOut,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export const useAuth = () => useContext(AuthContext);

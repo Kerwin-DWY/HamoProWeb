@@ -9,15 +9,31 @@ import { AuthProvider } from "./auth/AuthProvider";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 // wrap the application with AuthProvider
+// For Develop -> http://localhost:5174/pro and http://localhost:5174/app
 root.render(
-  <BrowserRouter>
-    <AuthProvider>
-      <UserProvider>
-        <Routes>
-          <Route path="/chat/:clientId/:avatarId" element={<ChatPage />} />
-          <Route path="/*" element={<App />} />
-        </Routes>
-      </UserProvider>
-    </AuthProvider>
-  </BrowserRouter>
+    <BrowserRouter>
+        <UserProvider>
+            <Routes>
+                <Route
+                    path="/app/*"
+                    element={
+                        <AuthProvider mode="app">
+                            <App portal="app" />
+                        </AuthProvider>
+                    }
+                />
+
+                <Route
+                    path="/pro/*"
+                    element={
+                        <AuthProvider mode="pro">
+                            <App portal="pro" />
+                        </AuthProvider>
+                    }
+                />
+
+                <Route path="/chat/:clientId/:avatarId" element={<ChatPage />} />
+            </Routes>
+        </UserProvider>
+    </BrowserRouter>
 );

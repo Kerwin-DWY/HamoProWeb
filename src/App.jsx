@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/AuthProvider";
 import { useUser } from "./context/UserContext";
-import { getAppMode, getLocalModeOverride } from "./utils/appMode";
 import { initUserProfile } from "./api/lamda/userApi.js";
 import { fetchAvatars } from "./api/lamda/avatarsApi.js";
 import Header from "./Header";
@@ -13,13 +12,12 @@ import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
 import ProfileSettingsPage from "./client/ProfileSettingsPage.jsx";
 import ChatsList from "./client/ChatsList.jsx";
 
-export default function App() {
+export default function App({ portal }) {
   const auth = useAuth();
   const { profile, setProfile } = useUser();
   const [avatars, setAvatars] = useState([]);
   const [activeTab, setActiveTab] = useState(null);
-  const mode = getAppMode(); // "pro" | "app"
-  const host = window.location.hostname;
+  const effectiveMode = portal; // SINGLE SOURCE OF TRUTH
 
   // for Query in DB, remove in production
   useEffect(() => {
@@ -42,15 +40,8 @@ export default function App() {
 
   const resolvedTab = activeTab ?? defaultTab;
 
-  // =====================================================
-  // Role / domain mismatch.
-  // For Develop -> http://localhost:5174?mode=app and http://localhost:5174?mode=pro
-  // =====================================================
-  const localMode = getLocalModeOverride();
-  const isLocalhost = host === "localhost";
-
-  const effectiveMode = isLocalhost ? localMode : host.startsWith("pro.") ? "pro" : host.startsWith("app.") ? "app" : null;
-
+    // =====================================================
+    // Role mismatch detection
   const isRoleMismatch =
     (profile?.role === "THERAPIST" && effectiveMode === "app") ||
     (profile?.role === "CLIENT" && effectiveMode === "pro");
@@ -61,19 +52,21 @@ export default function App() {
   // =====================================================
   const [initError, setInitError] = useState(null);
 
-  // App.jsx - Line 81 approx.
   useEffect(() => {
     if (!auth.user?.access_token) return;
     if (profile) return;
 
-    // Change auth.access_token to auth.user.access_token
-    initUserProfile({ authToken: auth.user.access_token, mode })
+    initUserProfile({
+      authToken: auth.user.access_token,
+      mode: effectiveMode, // single source of truth
+    })
         .then(setProfile)
         .catch((err) => {
           console.error("Profile init error:", err);
           setInitError(err);
         });
-  }, [auth.user, profile, mode, setProfile]);
+  }, [auth.user, profile, effectiveMode, setProfile]);
+
 
   // =====================================================
   // Fetch therapist's avatars
@@ -82,8 +75,8 @@ export default function App() {
     if (!auth.user?.access_token) return;
 
     fetchAvatars(auth.user.access_token)
-        .then(setAvatars)// save in avatars state
-        .catch(console.error);
+      .then(setAvatars)// save in avatars state
+      .catch(console.error);
   }, [auth.user]);
 
   // =====================================================
