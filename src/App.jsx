@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/AuthProvider";
 import { useUser } from "./context/UserContext";
-import { initUserProfile } from "./api/lamda/userApi.js";
-import { fetchAvatars } from "./api/lamda/avatarsApi.js";
+import { initUserProfile } from "./api/lambda/userApi.js";
+import { fetchAvatars } from "./api/lambda/avatarsApi.js";
 import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, Mail } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import InviteClientModal from "./InviteClientModal";
-import { createInvite } from "../api/lamda/invitesApi";
+import { createInvite } from "../api/lambda/invitesApi";
 
 export default function ClientGrid({ clients, onDeleteClick }) {
     const auth = useAuth();

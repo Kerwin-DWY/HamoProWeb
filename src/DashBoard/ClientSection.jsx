@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"; // Combined imports
 import { Plus, Users } from "lucide-react";
 import CreateClientModal from "./CreateClientModal";
-import { createClient, fetchClients, deleteClient } from "../api/lamda/clientsApi.js";
+import { createClient, fetchClients, deleteClient } from "../api/lambda/clientsApi.js";
 import { useAuth } from "../auth/AuthProvider";
 import ClientGrid from "./clientGrid";
 

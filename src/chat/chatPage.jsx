@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
-import { sendChatMessage, fetchChatHistory, saveChatMessage, } from "../api/lamda/hamoChatApi.js";
+import { sendChatMessage, fetchChatHistory, saveChatMessage, } from "../api/lambda/hamoChatApi.js";
 import { cleanAIText, chunkIntoMessages, } from "../utils/chatTextUtils";
 
 export default function ChatPage() {

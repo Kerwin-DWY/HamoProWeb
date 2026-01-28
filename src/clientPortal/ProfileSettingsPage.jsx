@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, QrCode, Upload } from "lucide-react";
 import InviteCodeModal from "./InviteCodeModal";
-import { acceptInvite } from "../api/lamda/acceptInvitesApi.js";
+import { acceptInvite } from "../api/lambda/acceptInvitesApi.js";
 import { useAuth } from "../auth/AuthProvider";
 import { useUser } from "../context/UserContext";
 
