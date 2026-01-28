@@ -32,7 +32,15 @@ root.render(
                     }
                 />
 
-                <Route path="/chat/:clientId/:avatarId" element={<ChatPage />} />
+                <Route
+                    path="/chat/:clientId/:avatarId"
+                    element={
+                           <AuthProvider mode="app">
+                               <ChatPage />
+                           </AuthProvider>
+                    }
+                />
+
             </Routes>
         </UserProvider>
     </BrowserRouter>

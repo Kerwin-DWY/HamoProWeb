@@ -2,20 +2,30 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
-import { sendChatMessage, fetchChatHistory, saveChatMessage, } from "../api/chatApi";
+import { sendChatMessage, fetchChatHistory, saveChatMessage, } from "../api/lamda/hamoChatApi.js";
 import { cleanAIText, chunkIntoMessages, } from "../utils/chatTextUtils";
 
 export default function ChatPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const auth = useAuth();
-  const [client] = useState(state?.client || null);
+  const [client, setClient] = useState(state?.client || null);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const bottomRef = useRef(null);
   const { clientId, avatarId } = useParams(); // uniquely identifies one chat instance
+
+  useEffect(() => {
+    if (client) return;
+
+    // TODO: fetch client info by clientId + avatarId
+    // OR redirect back safely
+
+    navigate("/app", { replace: true });
+  }, [client, navigate]);
+
 
   /* ======================
      AUTO SCROLL
@@ -104,8 +114,8 @@ export default function ChatPage() {
       });
 
       // Get AI reply
-      const aiReply = await sendChatMessage(userMessage.text);
-      const cleaned = cleanAIText(aiReply);
+      const aiReply = await sendChatMessage(token, userMessage.text);
+      const cleaned = cleanAIText(aiReply.reply);
 
       const chunks = chunkIntoMessages(cleaned, 3, 5).filter(Boolean);
 
@@ -122,6 +132,7 @@ export default function ChatPage() {
         aiMessages.map((msg) =>
           saveChatMessage(token, {
             clientId,
+            avatarId,
             sender: "ai",
             text: msg.text,
           })
