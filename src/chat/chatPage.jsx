@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Brain, Clock, MessageCircle, Heart } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import { sendChatMessage, fetchChatHistory, saveChatMessage, } from "../api/lambdaAPI/hamoChatApi.js";
 import { cleanAIText, chunkIntoMessages, } from "../utils/chatTextUtils";
@@ -20,10 +20,9 @@ export default function ChatPage() {
   useEffect(() => {
     if (client) return;
 
-    // TODO: fetch client info by clientId + avatarId
-    // OR redirect back safely
-
-    navigate("/app", { replace: true });
+    // If no client data passed, redirect back
+    console.warn("No client data found, redirecting...");
+    navigate(-1);
   }, [client, navigate]);
 
 
@@ -106,9 +105,7 @@ export default function ChatPage() {
       // Save user message
       await saveChatMessage(token, {
         clientId,
-        clientName: client.clientName,
         avatarId,
-        avatarName: client.avatarName,
         sender: "user",
         text: userMessage.text,
       });
@@ -179,53 +176,77 @@ export default function ChatPage() {
   }
 
   /* ======================
-     UI
+     CALCULATE SESSION INFO
+  ====================== */
+  const messageCount = messages.filter(m => m.sender === "user").length;
+  const sessionDuration = messages.length > 0 
+    ? Math.ceil((Date.now() - (messages[0]?.id === "greeting" ? Date.now() : messages[0]?.id)) / 60000)
+    : 0;
+
+  /* ======================
+     CLEAN THERAPY UI
   ====================== */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 pt-[100px] pb-10 px-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+      {/* Minimal Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white rounded-full text-slate-600"
+            className="p-2 hover:bg-slate-100 rounded-lg transition"
           >
             <ArrowLeft size={20} />
           </button>
-          <div>
-            <h2 className="text-2xl font-bold">
-              Chatting with {client.name}
-            </h2>
-            <p className="text-xs text-slate-500">
-              ID: {clientId.slice(0, 8)}...
-            </p>
+          
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+            <Brain className="text-white" size={20} />
+          </div>
+          
+          <div className="flex-1">
+            <h1 className="text-lg font-bold text-slate-900">
+              {client.avatarName || "AI Therapist"}
+            </h1>
+          </div>
+
+          <div className="text-xs text-slate-500">
+            {messageCount} messages
           </div>
         </div>
+      </div>
 
-        {/* Chat */}
-        <div className="bg-white rounded-3xl shadow-xl border h-[70vh] flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {/* Chat Container */}
+      <div className="max-w-4xl mx-auto p-4">
+        {/* Clean Chat Card */}
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+          {/* Messages Area */}
+          <div className="h-[calc(100vh-200px)] overflow-y-auto p-6 space-y-4">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${msg.sender === "user"
+                  className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
+                    msg.sender === "user"
                       ? "bg-indigo-600 text-white rounded-tr-none"
-                      : "bg-white border rounded-tl-none"
-                    }`}
+                      : "bg-slate-100 text-slate-900 rounded-tl-none"
+                  }`}
                 >
                   {msg.text}
                 </div>
               </div>
             ))}
 
+            {/* Thinking Indicator */}
             {isThinking && (
               <div className="flex justify-start">
-                <div className="bg-white border px-4 py-3 rounded-2xl text-sm text-slate-600">
-                  HAMO is thinking<span className="animate-pulse">...</span>
+                <div className="bg-slate-100 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-sm text-slate-600">Thinking...</span>
                 </div>
               </div>
             )}
@@ -233,26 +254,29 @@ export default function ChatPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <form
-            onSubmit={handleSendMessage}
-            className="p-4 border-t flex gap-3"
-          >
-            <input
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              disabled={isThinking}
-              placeholder="Type your message..."
-              className="flex-1 rounded-2xl border px-4 py-3"
-            />
-            <button
-              type="submit"
-              disabled={isThinking}
-              className="p-3 rounded-2xl bg-indigo-600 text-white"
-            >
-              <Send size={20} />
-            </button>
-          </form>
+          {/* Clean Input */}
+          <div className="border-t border-slate-200 p-4">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
+              <input
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                disabled={isThinking}
+                placeholder="Type your message..."
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm 
+                          focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 
+                          disabled:bg-slate-50 disabled:text-slate-400"
+              />
+              <button
+                type="submit"
+                disabled={isThinking || !inputText.trim()}
+                className="px-5 py-3 rounded-xl bg-indigo-600 text-white
+                          hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed
+                          transition-colors flex items-center gap-2"
+              >
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

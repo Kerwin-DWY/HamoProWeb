@@ -7,6 +7,7 @@ import Header from "./Header";
 import DashboardNav from "./DashBoard/DashboardNav";
 import AiAvatarsSection from "./DashBoard/AiAvatarsSection";
 import ClientSection from "./DashBoard/ClientSection";
+import ChatsSection from "./dashboard/ChatsSection";
 import CustomLoginPage from "./auth/CustomLoginPage";
 import RoleMismatchPage from "./auth/RoleMismatchPage.jsx";
 import ProfileSettingsPage from "./clientPortal/ProfileSettingsPage.jsx";
@@ -144,6 +145,10 @@ export default function App({ portal }) {
 
           {profile.role === "THERAPIST" && resolvedTab === "clients" && (
             <ClientSection avatars={avatars} />
+          )}
+
+          {profile.role === "THERAPIST" && resolvedTab === "chats" && (
+            <ChatsSection avatars={avatars} />
           )}
 
           {profile.role === "THERAPIST" && resolvedTab === "dashboard" && (

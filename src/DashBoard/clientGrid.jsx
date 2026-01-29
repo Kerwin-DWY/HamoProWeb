@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthProvider";
 import InviteClientModal from "./InviteClientModal";
 import { createInvite } from "../api/lambdaAPI/invitesApi";
 
-export default function ClientGrid({ clients, onDeleteClick, onEditClick }) {
+export default function ClientGrid({ clients, avatars, onDeleteClick, onEditClick }) {
     const auth = useAuth();
 
     const [inviteClient, setInviteClient] = useState(null);
@@ -14,12 +14,15 @@ export default function ClientGrid({ clients, onDeleteClick, onEditClick }) {
     const handleInvite = async (client, e) => {
         e.stopPropagation();
         setLoadingId(client.clientId);
-        const avatar = client.avatars.find(
+        
+        // Find avatar from avatars prop (not client.avatars which is just IDs)
+        const avatar = avatars.find(
             a => a.avatarId === client.selectedAvatarId
         );
 
         if (!avatar) {
-            alert("Selected avatar not found");
+            alert("Please assign an avatar to this client first");
+            setLoadingId(null);
             return;
         }
 

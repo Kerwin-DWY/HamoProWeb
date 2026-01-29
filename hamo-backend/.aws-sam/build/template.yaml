@@ -35,6 +35,21 @@ Resources:
           KeyType: RANGE
         Projection:
           ProjectionType: ALL
+  ChatMessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: HamoChatMessages
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: pk
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      KeySchema:
+      - AttributeName: pk
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
   HamoHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -217,6 +232,89 @@ Resources:
             Method: POST
     Metadata:
       SamResourceId: AcceptInviteFunction
+  UserChatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UserChatsFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        GetUserChats:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /user/chats
+            Method: GET
+        CreateUserChat:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /user/chats
+            Method: POST
+        DeleteUserChat:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /user/chats/{clientId}/{avatarId}
+            Method: DELETE
+    Metadata:
+      SamResourceId: UserChatsFunction
+  ChatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ChatFunction
+      Handler: index.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          CHAT_TABLE_NAME:
+            Ref: ChatMessagesTable
+          GEMINI_API_KEY: '{{resolve:ssm:/hamo/gemini-api-key:1}}'
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ChatMessagesTable
+      Events:
+        GenerateChat:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /chat
+            Method: POST
+        GetChatHistory:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /chat/history
+            Method: GET
+        SaveChatMessage:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /chat/message
+            Method: POST
+        GetConversations:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /chat/conversations
+            Method: GET
+    Metadata:
+      SamResourceId: ChatFunction
 Outputs:
   ApiUrl:
     Description: Hamo HTTP API URL

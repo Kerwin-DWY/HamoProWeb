@@ -3,6 +3,7 @@ import {
     DynamoDBDocumentClient,
     QueryCommand,
     UpdateCommand,
+    GetCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = process.env.TABLE_NAME;
@@ -47,6 +48,32 @@ export const handler = async (event) => {
         }
 
         const invite = queryResult.Items[0];
+        // #region agent log
+        console.log('[DEBUG] Invite found:', {clientId:invite.clientId,avatarId:invite.avatarId,clientName:invite.clientName,avatarName:invite.avatarName});
+        // #endregion
+
+        // ========================
+        // Fetch avatar name if missing
+        // ========================
+        let avatarName = invite.avatarName;
+        if (!avatarName && invite.avatarId) {
+            try {
+                const avatarResult = await ddb.send(
+                    new GetCommand({
+                        TableName: TABLE_NAME,
+                        Key: {
+                            pk: `USER#${invite.pk.split('#')[1]}`, // Extract userId from invite.pk
+                            sk: `AVATAR#${invite.avatarId}`,
+                        },
+                    })
+                );
+                avatarName = avatarResult.Item?.avatarName || 'AI Therapist';
+                console.log('[DEBUG] Fetched avatar name:', avatarName);
+            } catch (err) {
+                console.error('[DEBUG] Failed to fetch avatar:', err);
+                avatarName = 'AI Therapist'; // Fallback
+            }
+        }
 
         // ========================
         // Expiration check
@@ -84,13 +111,17 @@ export const handler = async (event) => {
             })
         );
 
-        return response(200, {
+        const responseData = {
             message: "Invitation accepted",
             clientId: invite.clientId,
             avatarId: invite.avatarId,
-            avatarName: invite.avatarName,
+            avatarName: avatarName,
             clientName: invite.clientName,
-        });
+        };
+        // #region agent log
+        console.log('[DEBUG] Returning response:', responseData);
+        // #endregion
+        return response(200, responseData);
 
     } catch (err) {
         console.error("Accept invite error:", err);

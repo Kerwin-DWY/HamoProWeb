@@ -45,4 +45,22 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["AcceptInviteFunction"]
 
+[function_build_definitions.98b5b493-ef11-4084-8cc5-aeb28a4d667f]
+codeuri = "/Users/kerwindu/Desktop/HamoPro/hamoAI/hamo-backend/src/chat"
+runtime = "nodejs18.x"
+architecture = "x86_64"
+handler = "index.handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ChatFunction"]
+
+[function_build_definitions.2a2c3a1d-a256-4f76-8b72-6ece1fbfd72d]
+codeuri = "/Users/kerwindu/Desktop/HamoPro/hamoAI/hamo-backend/src/user-chats"
+runtime = "nodejs18.x"
+architecture = "x86_64"
+handler = "index.handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["UserChatsFunction"]
+
 [layer_build_definitions]

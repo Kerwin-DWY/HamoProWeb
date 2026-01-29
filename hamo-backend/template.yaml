@@ -11,7 +11,7 @@ Globals:
 Resources:
 
   # ============================
-  # DynamoDB Table
+  # DynamoDB Tables
   # ============================
   HamoProTable:
     Type: AWS::DynamoDB::Table
@@ -41,6 +41,23 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+
+  # Chat Messages Table
+  ChatMessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: HamoChatMessages
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
 
   # ============================
   # HTTP API (CORS HANDLED HERE)
@@ -216,6 +233,82 @@ Resources:
             ApiId: !Ref HamoHttpApi
             Path: /invites/accept
             Method: POST
+
+  # ============================
+  # /user/chats - User chat sessions
+  # ============================
+  UserChatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/user-chats/
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref HamoProTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref HamoProTable
+      Events:
+        GetUserChats:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /user/chats
+            Method: GET
+        CreateUserChat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /user/chats
+            Method: POST
+        DeleteUserChat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /user/chats/{clientId}/{avatarId}
+            Method: DELETE
+
+  # ============================
+  # /chat - Chat endpoints
+  # ============================
+  ChatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/chat/
+      Handler: index.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          CHAT_TABLE_NAME: !Ref ChatMessagesTable
+          GEMINI_API_KEY: "{{resolve:ssm:/hamo/gemini-api-key:1}}"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatMessagesTable
+      Events:
+        GenerateChat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /chat
+            Method: POST
+        GetChatHistory:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /chat/history
+            Method: GET
+        SaveChatMessage:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /chat/message
+            Method: POST
+        GetConversations:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HamoHttpApi
+            Path: /chat/conversations
+            Method: GET
 
 Outputs:
   ApiUrl:

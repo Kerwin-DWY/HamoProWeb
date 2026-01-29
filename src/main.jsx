@@ -35,9 +35,18 @@ root.render(
                 <Route
                     path="/chat/:clientId/:avatarId"
                     element={
-                           <AuthProvider mode="app">
-                               <ChatPage />
-                           </AuthProvider>
+                        <AuthProvider mode="app">
+                            <ChatPage />
+                        </AuthProvider>
+                    }
+                />
+
+                <Route
+                    path="/pro/chat/:clientId/:avatarId"
+                    element={
+                        <AuthProvider mode="pro">
+                            <ChatPage />
+                        </AuthProvider>
                     }
                 />
 
