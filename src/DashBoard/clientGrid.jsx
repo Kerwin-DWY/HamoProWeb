@@ -47,7 +47,7 @@ export default function ClientGrid({ clients, onDeleteClick }) {
                 {clients.map((client) => (
                     <div
                         key={client.clientId}
-                        className="relative bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition"
+                        className="relative bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition max-w-md"
                     >
                         {/* Delete */}
                         <button

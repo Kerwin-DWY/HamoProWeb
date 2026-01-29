@@ -3,7 +3,7 @@ import { Plus, Sparkles } from "lucide-react";
 import CreateAvatarModal from "./CreateAvatarModal";
 import { createAvatar, deleteAvatar } from "../api/lambda/avatarsApi.js";
 import { X } from "lucide-react";
-import {useAuth} from "../auth/AuthProvider.jsx";
+import { useAuth } from "../auth/AuthProvider.jsx";
 
 export default function AiAvatarsSection({ avatars, setAvatars }) {
   const auth = useAuth();
@@ -45,7 +45,7 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
   };
 
   return (
-    <div className="w-full max-w-6xl">
+    <div className="w-full max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -97,7 +97,7 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
         />
       )}
 
-    </div>    
+    </div>
   );
 }
 
@@ -154,6 +154,7 @@ function AvatarGrid({ avatars, onDeleteClick }) {
             rounded-2xl p-6
             shadow-md hover:shadow-xl
             transition
+            max-w-md
           "
         >
           {/* Delete button */}
