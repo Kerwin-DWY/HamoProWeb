@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import CreateAvatarModal from "./CreateAvatarModal";
-import { createAvatar, deleteAvatar } from "../api/lambda/avatarsApi.js";
+import { createAvatar, deleteAvatar } from "../api/lambdaAPI/avatarsApi.js";
 import { X } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider.jsx";
 
