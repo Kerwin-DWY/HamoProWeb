@@ -1,0 +1,195 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Hamo Backend - Lambda + HTTP API + Cognito
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 15
+    MemorySize: 256
+Resources:
+  HamoProTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: HamoPro
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: pk
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      - AttributeName: InviteCodeIndexPK
+        AttributeType: S
+      - AttributeName: InviteCodeIndexSK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: pk
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
+      GlobalSecondaryIndexes:
+      - IndexName: InviteCodeIndex
+        KeySchema:
+        - AttributeName: InviteCodeIndexPK
+          KeyType: HASH
+        - AttributeName: InviteCodeIndexSK
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+  HamoHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+        - http://localhost:5174
+        AllowHeaders:
+        - authorization
+        - content-type
+        AllowMethods:
+        - GET
+        - POST
+        - DELETE
+        - OPTIONS
+        MaxAge: 600
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: https://cognito-idp.ap-east-1.amazonaws.com/ap-east-1_LguNAJT1O
+              audience:
+              - j6ajfbnjhr6oji1j8jbtou4k7
+        DefaultAuthorizer: CognitoAuthorizer
+  AvatarsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: AvatarsFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        GetAvatars:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /avatars
+            Method: GET
+        CreateAvatar:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /avatars
+            Method: POST
+    Metadata:
+      SamResourceId: AvatarsFunction
+  ClientsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ClientsFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        GetClients:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /clients
+            Method: GET
+        CreateClient:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /clients
+            Method: POST
+    Metadata:
+      SamResourceId: ClientsFunction
+  UserInitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UserInitFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        InitUser:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /user/init
+            Method: POST
+    Metadata:
+      SamResourceId: UserInitFunction
+  InvitesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: InvitesFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        CreateInvite:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /invites
+            Method: POST
+    Metadata:
+      SamResourceId: InvitesFunction
+  AcceptInviteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: AcceptInviteFunction
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: HamoProTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: HamoProTable
+      Events:
+        AcceptInvite:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /invites/accept
+            Method: POST
+    Metadata:
+      SamResourceId: AcceptInviteFunction
+Outputs:
+  ApiUrl:
+    Description: Hamo HTTP API URL
+    Value:
+      Fn::Sub: https://${HamoHttpApi}.execute-api.${AWS::Region}.amazonaws.com

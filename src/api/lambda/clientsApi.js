@@ -1,4 +1,4 @@
-const API_BASE = "https://8ys1hr8ne0.execute-api.ap-east-1.amazonaws.com";
+const API_BASE = "https://oprmwzx3qb.execute-api.us-east-1.amazonaws.com";
 
 /**
  * Helper: common fetch wrapper
