@@ -5,6 +5,7 @@ import {
     PutCommand,
     QueryCommand,
     DeleteCommand,
+    UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 // AWS injects region automatically
@@ -87,6 +88,62 @@ export const handler = async (event) => {
             );
 
             return response(201, clientItem);
+        }
+
+        // ========================
+        // PUT /clients/{clientId}
+        // ========================
+        if (method === "PUT" && path.startsWith("/clients/")) {
+            const [, , clientId] = path.split("/");
+
+            if (!clientId) {
+                return response(400, { message: "clientId is required" });
+            }
+
+            const body = JSON.parse(event.body || "{}");
+
+            // Build update expression dynamically
+            const updateExpressions = [];
+            const expressionAttributeNames = {};
+            const expressionAttributeValues = {};
+
+            const allowedFields = [
+                "name", "sex", "age", "avatars", "selectedAvatarId",
+                "emotionPattern", "personality", "cognition", "goals", "principles"
+            ];
+
+            allowedFields.forEach(field => {
+                if (body[field] !== undefined) {
+                    updateExpressions.push(`#${field} = :${field}`);
+                    expressionAttributeNames[`#${field}`] = field;
+                    expressionAttributeValues[`:${field}`] = body[field];
+                }
+            });
+
+            if (updateExpressions.length === 0) {
+                return response(400, { message: "No fields to update" });
+            }
+
+            // Add updatedAt timestamp
+            updateExpressions.push("#updatedAt = :updatedAt");
+            expressionAttributeNames["#updatedAt"] = "updatedAt";
+            expressionAttributeValues[":updatedAt"] = new Date().toISOString();
+
+            const result = await ddb.send(
+                new UpdateCommand({
+                    TableName: TABLE_NAME,
+                    Key: {
+                        pk: `USER#${userId}`,
+                        sk: `CLIENT#${clientId}`,
+                    },
+                    UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+                    ExpressionAttributeNames: expressionAttributeNames,
+                    ExpressionAttributeValues: expressionAttributeValues,
+                    ReturnValues: "ALL_NEW",
+                })
+            );
+
+            return response(200, result.Attributes);
         }
 
         // ========================

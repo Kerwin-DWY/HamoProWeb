@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"; // Combined imports
 import { Plus, Users } from "lucide-react";
 import CreateClientModal from "./CreateClientModal";
-import { createClient, fetchClients, deleteClient } from "../api/lambdaAPI/clientsApi.js";
+import EditClientModal from "./EditClientModal";
+import { createClient, fetchClients, deleteClient, updateClient } from "../api/lambdaAPI/clientsApi.js";
 import { useAuth } from "../auth/AuthProvider";
-import ClientGrid from "./clientGrid";
+import ClientGrid from "./ClientGrid";
 
 export default function ClientsSection({ avatars }) {
   const auth = useAuth();
@@ -11,6 +12,7 @@ export default function ClientsSection({ avatars }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
+  const [clientToEdit, setClientToEdit] = useState(null);
 
   useEffect(() => {
     if (!auth.user?.access_token) return;
@@ -29,6 +31,19 @@ export default function ClientsSection({ avatars }) {
     } catch (err) {
       console.error(err);
       alert("Failed to create client");
+    }
+  };
+
+  const handleUpdateClient = async (clientId, updates) => {
+    try {
+      const updated = await updateClient(auth.user.access_token, clientId, updates);
+      setClients((prev) =>
+        prev.map((c) => (c.clientId === clientId ? updated : c))
+      );
+      setClientToEdit(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update client");
     }
   };
 
@@ -69,6 +84,7 @@ export default function ClientsSection({ avatars }) {
                 clients={clients}
                 avatars={avatars}
                 onDeleteClick={setClientToDelete}
+                onEditClick={setClientToEdit}
             />
         )}
 
@@ -76,6 +92,15 @@ export default function ClientsSection({ avatars }) {
             <CreateClientModal
                 onClose={() => setShowModal(false)}
                 onCreate={handleCreateClient}
+                avatars={avatars}
+            />
+        )}
+
+        {clientToEdit && (
+            <EditClientModal
+                client={clientToEdit}
+                onClose={() => setClientToEdit(null)}
+                onUpdate={handleUpdateClient}
                 avatars={avatars}
             />
         )}

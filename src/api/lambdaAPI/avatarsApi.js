@@ -34,6 +34,26 @@ export async function createAvatar(accessToken, avatar) {
 }
 
 /**
+ * PUT /avatars/{avatarId}
+ */
+export async function updateAvatar(accessToken, avatarId, updates) {
+  const res = await fetch(`${API_BASE}/avatars/${avatarId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update avatar");
+  }
+
+  return res.json();
+}
+
+/**
  * DELETE /avatars/{avatarId}
  */
 export async function deleteAvatar(accessToken, avatarId) {

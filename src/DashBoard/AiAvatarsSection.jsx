@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import CreateAvatarModal from "./CreateAvatarModal";
-import { createAvatar, deleteAvatar } from "../api/lambdaAPI/avatarsApi.js";
+import EditAvatarModal from "./EditAvatarModal";
+import { createAvatar, deleteAvatar, updateAvatar } from "../api/lambdaAPI/avatarsApi.js";
 import { X } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider.jsx";
 
@@ -9,6 +10,7 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
   const auth = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [avatarToDelete, setAvatarToDelete] = useState(null);
+  const [avatarToEdit, setAvatarToEdit] = useState(null);
 
   // create avatar
   const handleCreateAvatar = async (form) => {
@@ -23,6 +25,26 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
     } catch (err) {
       console.error(err);
       alert("Failed to create avatar");
+    }
+  };
+
+  // Update avatar
+  const handleUpdateAvatar = async (avatarId, updates) => {
+    try {
+      const updated = await updateAvatar(
+        auth.user.access_token,
+        avatarId,
+        updates
+      );
+
+      setAvatars((prev) =>
+        prev.map((a) => (a.avatarId === avatarId ? updated : a))
+      );
+
+      setAvatarToEdit(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update avatar");
     }
   };
 
@@ -79,6 +101,7 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
         <AvatarGrid
           avatars={avatars}
           onDeleteClick={setAvatarToDelete}
+          onEditClick={setAvatarToEdit}
         />
       )}
 
@@ -86,6 +109,14 @@ export default function AiAvatarsSection({ avatars, setAvatars }) {
         <CreateAvatarModal
           onClose={() => setShowModal(false)}
           onCreate={handleCreateAvatar}
+        />
+      )}
+
+      {avatarToEdit && (
+        <EditAvatarModal
+          avatar={avatarToEdit}
+          onClose={() => setAvatarToEdit(null)}
+          onUpdate={handleUpdateAvatar}
         />
       )}
 
@@ -141,12 +172,13 @@ function EmptyState({ onCreate }) {
   );
 }
 
-function AvatarGrid({ avatars, onDeleteClick }) {
+function AvatarGrid({ avatars, onDeleteClick, onEditClick }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {avatars.map((avatar) => (
         <div
           key={avatar.avatarId}
+          onClick={() => onEditClick(avatar)}
           className="
             relative
             bg-white/80 backdrop-blur-xl
@@ -155,11 +187,15 @@ function AvatarGrid({ avatars, onDeleteClick }) {
             shadow-md hover:shadow-xl
             transition
             max-w-md
+            cursor-pointer
           "
         >
           {/* Delete button */}
           <button
-            onClick={() => onDeleteClick(avatar)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick(avatar);
+            }}
             className="
               absolute top-4 right-4
               w-8 h-8
@@ -168,6 +204,7 @@ function AvatarGrid({ avatars, onDeleteClick }) {
               flex items-center justify-center
               hover:bg-red-600
               shadow
+              z-10
             "
           >
             <X size={14} />

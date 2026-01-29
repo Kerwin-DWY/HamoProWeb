@@ -5,6 +5,7 @@ import {
     PutCommand,
     QueryCommand,
     DeleteCommand,
+    UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 
@@ -73,6 +74,70 @@ export const handler = async (event) => {
             );
 
             return response(201, avatar);
+        }
+
+        // ========================
+        // PUT /avatars/{avatarId}
+        // ========================
+        if (method === "PUT" && path.startsWith("/avatars/")) {
+            const [, , avatarId] = path.split("/");
+
+            if (!avatarId) {
+                return response(400, { message: "avatarId is required" });
+            }
+
+            const body = JSON.parse(event.body || "{}");
+
+            // Build update expression dynamically
+            const updateExpressions = [];
+            const expressionAttributeNames = {};
+            const expressionAttributeValues = {};
+
+            if (body.name !== undefined) {
+                updateExpressions.push("#name = :name");
+                expressionAttributeNames["#name"] = "name";
+                expressionAttributeValues[":name"] = body.name;
+            }
+            if (body.theory !== undefined) {
+                updateExpressions.push("#theory = :theory");
+                expressionAttributeNames["#theory"] = "theory";
+                expressionAttributeValues[":theory"] = body.theory;
+            }
+            if (body.methodology !== undefined) {
+                updateExpressions.push("#methodology = :methodology");
+                expressionAttributeNames["#methodology"] = "methodology";
+                expressionAttributeValues[":methodology"] = body.methodology;
+            }
+            if (body.principles !== undefined) {
+                updateExpressions.push("#principles = :principles");
+                expressionAttributeNames["#principles"] = "principles";
+                expressionAttributeValues[":principles"] = body.principles;
+            }
+
+            if (updateExpressions.length === 0) {
+                return response(400, { message: "No fields to update" });
+            }
+
+            // Add updatedAt timestamp
+            updateExpressions.push("#updatedAt = :updatedAt");
+            expressionAttributeNames["#updatedAt"] = "updatedAt";
+            expressionAttributeValues[":updatedAt"] = new Date().toISOString();
+
+            const result = await ddb.send(
+                new UpdateCommand({
+                    TableName: TABLE_NAME,
+                    Key: {
+                        pk: `USER#${userId}`,
+                        sk: `AVATAR#${avatarId}`,
+                    },
+                    UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+                    ExpressionAttributeNames: expressionAttributeNames,
+                    ExpressionAttributeValues: expressionAttributeValues,
+                    ReturnValues: "ALL_NEW",
+                })
+            );
+
+            return response(200, result.Attributes);
         }
 
         // ========================

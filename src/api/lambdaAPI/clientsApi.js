@@ -64,6 +64,25 @@ export async function createClient(accessToken, client) {
 
 /**
  * =========================
+ * PUT /clients/{clientId}
+ * =========================
+ */
+export async function updateClient(accessToken, clientId, updates) {
+  if (!clientId) {
+    throw new Error("clientId is required");
+  }
+
+  return apiFetch(`${API_BASE}/clients/${clientId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(updates),
+  });
+}
+
+/**
+ * =========================
  * DELETE /clients/{clientId}
  * =========================
  */

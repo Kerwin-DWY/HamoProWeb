@@ -4,14 +4,15 @@ import { useAuth } from "../auth/AuthProvider";
 import InviteClientModal from "./InviteClientModal";
 import { createInvite } from "../api/lambdaAPI/invitesApi";
 
-export default function ClientGrid({ clients, onDeleteClick }) {
+export default function ClientGrid({ clients, onDeleteClick, onEditClick }) {
     const auth = useAuth();
 
     const [inviteClient, setInviteClient] = useState(null);
     const [inviteCode, setInviteCode] = useState(null);
     const [loadingId, setLoadingId] = useState(null);
 
-    const handleInvite = async (client) => {
+    const handleInvite = async (client, e) => {
+        e.stopPropagation();
         setLoadingId(client.clientId);
         const avatar = client.avatars.find(
             a => a.avatarId === client.selectedAvatarId
@@ -47,12 +48,16 @@ export default function ClientGrid({ clients, onDeleteClick }) {
                 {clients.map((client) => (
                     <div
                         key={client.clientId}
-                        className="relative bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition max-w-md"
+                        onClick={() => onEditClick(client)}
+                        className="relative bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition max-w-md cursor-pointer"
                     >
                         {/* Delete */}
                         <button
-                            onClick={() => onDeleteClick(client)}
-                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteClick(client);
+                            }}
+                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow z-10"
                         >
                             <X size={14} />
                         </button>
@@ -78,7 +83,7 @@ export default function ClientGrid({ clients, onDeleteClick }) {
                         {/* INVITE */}
                         <button
                             disabled={loadingId === client.clientId}
-                            onClick={() => handleInvite(client)}
+                            onClick={(e) => handleInvite(client, e)}
                             className="mt-6 w-full flex items-center justify-center gap-2
                                      bg-indigo-600 text-white py-2.5 rounded-xl
                                      hover:bg-indigo-700 transition shadow disabled:opacity-60"

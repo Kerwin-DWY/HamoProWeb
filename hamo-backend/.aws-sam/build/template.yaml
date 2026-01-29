@@ -47,6 +47,7 @@ Resources:
         AllowMethods:
         - GET
         - POST
+        - PUT
         - DELETE
         - OPTIONS
         MaxAge: 600
@@ -87,6 +88,20 @@ Resources:
               Ref: HamoHttpApi
             Path: /avatars
             Method: POST
+        UpdateAvatar:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /avatars/{avatarId}
+            Method: PUT
+        DeleteAvatar:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /avatars/{avatarId}
+            Method: DELETE
     Metadata:
       SamResourceId: AvatarsFunction
   ClientsFunction:
@@ -117,6 +132,20 @@ Resources:
               Ref: HamoHttpApi
             Path: /clients
             Method: POST
+        UpdateClient:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /clients/{clientId}
+            Method: PUT
+        DeleteClient:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /clients/{clientId}
+            Method: DELETE
     Metadata:
       SamResourceId: ClientsFunction
   UserInitFunction:
