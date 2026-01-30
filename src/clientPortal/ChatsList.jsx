@@ -14,28 +14,15 @@ export default function ChatsList() {
 
     // Fetch chats from backend on mount
     useEffect(() => {
-        if (!auth.user?.access_token) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatsList.jsx:17',message:'no access token',data:{hasUser:!!auth.user},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4'})}).catch(()=>{});
-            // #endregion
-            return;
-        }
+        if (!auth.user?.access_token) return;
 
         async function loadChats() {
             try {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatsList.jsx:21',message:'calling fetchUserChats',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4'})}).catch(()=>{});
-                // #endregion
                 const userChats = await fetchUserChats(auth.user.access_token);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatsList.jsx:22',message:'fetchUserChats result',data:{userChats,count:userChats?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-                // #endregion
                 setChats(userChats);
             } catch (err) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatsList.jsx:24',message:'fetchUserChats error',data:{error:err.message,stack:err.stack},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4,H5'})}).catch(()=>{});
-                // #endregion
                 console.error("Failed to load chats:", err);
+                // Silently fail - user can still use the app
             } finally {
                 setLoading(false);
             }

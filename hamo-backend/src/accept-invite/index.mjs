@@ -48,9 +48,6 @@ export const handler = async (event) => {
         }
 
         const invite = queryResult.Items[0];
-        // #region agent log
-        console.log('[DEBUG] Invite found:', {clientId:invite.clientId,avatarId:invite.avatarId,clientName:invite.clientName,avatarName:invite.avatarName});
-        // #endregion
 
         // ========================
         // Fetch avatar name if missing
@@ -68,9 +65,8 @@ export const handler = async (event) => {
                     })
                 );
                 avatarName = avatarResult.Item?.avatarName || 'AI Therapist';
-                console.log('[DEBUG] Fetched avatar name:', avatarName);
             } catch (err) {
-                console.error('[DEBUG] Failed to fetch avatar:', err);
+                console.error('Failed to fetch avatar:', err);
                 avatarName = 'AI Therapist'; // Fallback
             }
         }
@@ -118,9 +114,6 @@ export const handler = async (event) => {
             avatarName: avatarName,
             clientName: invite.clientName,
         };
-        // #region agent log
-        console.log('[DEBUG] Returning response:', responseData);
-        // #endregion
         return response(200, responseData);
 
     } catch (err) {

@@ -13,8 +13,26 @@ export function AuthProvider({ children, mode }) {
         [mode]
     );
 
+    // Check if token is expired (with 60 second buffer)
+    const isTokenExpired = useCallback((token) => {
+        if (!token) return true;
+        try {
+            const decoded = jwtDecode(token);
+            const currentTime = Date.now() / 1000;
+            return decoded.exp < currentTime + 60; // 60 second buffer
+        } catch {
+            return true;
+        }
+    }, []);
+
     const constructUser = useCallback((accessToken, idToken) => {
         if (!accessToken) return null;
+
+        // Check if token is expired
+        if (isTokenExpired(accessToken)) {
+            console.log("Token expired, clearing session");
+            return null;
+        }
 
         try {
             const decodedId = idToken ? jwtDecode(idToken) : {};
@@ -31,7 +49,7 @@ export function AuthProvider({ children, mode }) {
             console.error("JWT decode failed", err);
             return null;
         }
-    }, []);
+    }, [isTokenExpired]);
 
     // ============================
     // Init from portal storage
@@ -86,12 +104,28 @@ export function AuthProvider({ children, mode }) {
         setUser(null);
     }, [storageKey]);
 
+    // Check token expiration on visibility change (tab becomes active)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && user) {
+                if (isTokenExpired(user.access_token)) {
+                    console.log("Session expired while idle, signing out");
+                    signOut();
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [user, isTokenExpired, signOut]);
+
     return (
         <AuthContext.Provider
             value={{
                 user,
                 isLoading,
                 isAuthenticated: !!user,
+                isTokenExpired,
                 signIn,
                 signOut,
             }}

@@ -17,13 +17,7 @@ export default function ProfileSettingsPage() {
 
     const handleAcceptInvite = async (code) => {
         try {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:20',message:'acceptInvite called',data:{code},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
-            // #endregion
             const result = await acceptInvite(auth.user.access_token, code);
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:22',message:'acceptInvite result',data:{result,clientId:result.clientId,avatarId:result.avatarId,clientName:result.clientName,avatarName:result.avatarName},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H2'})}).catch(()=>{});
-            // #endregion
 
             const newChat = {
                 clientId: result.clientId,
@@ -31,32 +25,19 @@ export default function ProfileSettingsPage() {
                 clientName: result.clientName,
                 avatarName: result.avatarName,
             };
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:28',message:'newChat constructed',data:{newChat},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-            // #endregion
 
             // Save to backend
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:30',message:'calling createUserChat',data:{newChat},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-            // #endregion
             await createUserChat(auth.user.access_token, newChat);
-
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:32',message:'createUserChat success',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-            // #endregion
 
             // Update local state
             setChats((prev) => [...prev, newChat]);
             setShowInviteModal(false);
             
-            // Show beautiful success message
+            // Show success message
             setSuccessMessage(`Successfully connected to ${result.avatarName}!`);
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 4000);
         } catch (err) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4dfe4d4d-54ad-4d09-bc30-acc643ee8859',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProfileSettingsPage.jsx:41',message:'handleAcceptInvite error',data:{error:err.message,stack:err.stack},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H2,H3'})}).catch(()=>{});
-            // #endregion
             console.error("Invite acceptance error:", err);
             alert(err.message || "Invalid or expired invite code");
         }

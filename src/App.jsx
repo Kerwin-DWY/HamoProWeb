@@ -56,6 +56,13 @@ export default function App({ portal }) {
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
+    // Check if token is expired before making API call
+    if (auth.isTokenExpired?.(auth.user.access_token)) {
+      console.log("Token expired, redirecting to login");
+      auth.signOut();
+      return;
+    }
+
     initUserProfile({
       authToken: auth.user.access_token,
       mode: effectiveMode, // single source of truth
@@ -63,9 +70,19 @@ export default function App({ portal }) {
         .then(setProfile)
         .catch((err) => {
           console.error("Profile init error:", err);
-          setInitError(err);
+          // If it's a network error or auth error, sign out instead of showing error
+          if (err.message?.includes('Failed to fetch') || 
+              err.message?.includes('401') || 
+              err.message?.includes('403') ||
+              err.message?.includes('NetworkError') ||
+              err.message?.includes('net::')) {
+            console.log("Network/auth error, redirecting to login");
+            auth.signOut();
+          } else {
+            setInitError(err);
+          }
         });
-  }, [auth.user, profile, effectiveMode, setProfile]);
+  }, [auth.user, profile, effectiveMode, setProfile, auth]);
 
 
   // =====================================================
@@ -74,10 +91,24 @@ export default function App({ portal }) {
   useEffect(() => {
     if (!auth.user?.access_token) return;
 
+    // Check if token is expired
+    if (auth.isTokenExpired?.(auth.user.access_token)) {
+      auth.signOut();
+      return;
+    }
+
     fetchAvatars(auth.user.access_token)
-      .then(setAvatars)// save in avatars state
-      .catch(console.error);
-  }, [auth.user]);
+      .then(setAvatars)
+      .catch((err) => {
+        console.error("Avatars fetch error:", err);
+        // Handle network/auth errors
+        if (err.message?.includes('Failed to fetch') || 
+            err.message?.includes('401') || 
+            err.message?.includes('403')) {
+          auth.signOut();
+        }
+      });
+  }, [auth.user, auth]);
 
   // =====================================================
   // Guards

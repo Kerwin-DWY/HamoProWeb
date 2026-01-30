@@ -27,9 +27,6 @@ export const handler = async (event) => {
        GET /user/chats - Fetch user's chat sessions
     ====================== */
     if (method === "GET" && path === "/user/chats") {
-      // #region agent log
-      console.log('[DEBUG] GET /user/chats called, userId:', userId);
-      // #endregion
       const result = await ddb.send(
         new QueryCommand({
           TableName: TABLE_NAME,
@@ -40,9 +37,6 @@ export const handler = async (event) => {
           },
         })
       );
-      // #region agent log
-      console.log('[DEBUG] DynamoDB query result:', {count:result.Items?.length,items:result.Items});
-      // #endregion
 
       return response(200, result.Items || []);
     }
@@ -52,15 +46,9 @@ export const handler = async (event) => {
     ====================== */
     if (method === "POST" && path === "/user/chats") {
       const body = JSON.parse(event.body || "{}");
-      // #region agent log
-      console.log('[DEBUG] POST /user/chats received:', {body, userId});
-      // #endregion
       const { clientId, avatarId, clientName, avatarName } = body;
 
       if (!clientId || !avatarId || !clientName || !avatarName) {
-        // #region agent log
-        console.log('[DEBUG] Missing required fields:', {clientId,avatarId,clientName,avatarName});
-        // #endregion
         return response(400, {
           message: "clientId, avatarId, clientName, and avatarName required",
         });
