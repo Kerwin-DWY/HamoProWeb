@@ -1,8 +1,9 @@
-import { Brain, User, BarChart3, MessageSquare, Settings } from "lucide-react";
+import { Brain, User, BarChart3, MessageSquare, Settings, History } from "lucide-react";
 
 const THERAPIST_TABS = [
     { key: "avatars", label: "AI Avatars", icon: Brain },
     { key: "clients", label: "Clients", icon: User },
+    { key: "chat-history", label: "Chat History", icon: History },
     { key: "dashboard", label: "Dashboard", icon: BarChart3 },
 ];
 

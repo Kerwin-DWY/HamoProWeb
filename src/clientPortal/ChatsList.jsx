@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { useAuth } from "../auth/AuthProvider";
-import { MessageSquare, ArrowRight, Sparkles, Trash2, AlertCircle } from "lucide-react";
+import { MessageSquare, Trash2 } from "lucide-react";
 import { fetchUserChats, deleteUserChat } from "../api/lambdaAPI/userChatsApi";
 
 export default function ChatsList() {
-    const { chats, setChats } = useUser();
+    const { chats, setChats, profile } = useUser();
     const auth = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -22,7 +22,6 @@ export default function ChatsList() {
                 setChats(userChats);
             } catch (err) {
                 console.error("Failed to load chats:", err);
-                // Silently fail - user can still use the app
             } finally {
                 setLoading(false);
             }
@@ -50,6 +49,13 @@ export default function ChatsList() {
         }
     };
 
+    // Format time for display
+    const formatTime = (dateStr) => {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
     if (loading) {
         return (
             <div className="w-full max-w-3xl flex items-center justify-center py-20">
@@ -74,6 +80,9 @@ export default function ChatsList() {
         );
     }
 
+    // Get user's nickname or email prefix
+    const userNickname = profile?.nickname || auth.user?.profile?.email?.split('@')[0] || 'You';
+
     return (
         <div className="w-full max-w-3xl">
             <div className="mb-6">
@@ -83,67 +92,68 @@ export default function ChatsList() {
                 </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {chats.map((chat) => {
                     const chatId = `${chat.clientId}-${chat.avatarId}`;
                     const isDeleting = deletingId === chatId;
+                    const lastMessage = chat.lastMessage || `Hello! I'm ${chat.avatarName}. Welcome to Hamo! I'm here to support you on your journey.`;
 
                     return (
                         <div
                             key={chatId}
-                            className="relative w-full bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg hover:border-indigo-300 transition-all group"
+                            className="relative w-full bg-white border border-slate-100 rounded-2xl hover:shadow-md hover:border-slate-200 transition-all group cursor-pointer"
+                            onClick={() => !isDeleting && navigate(`/chat/${chat.clientId}/${chat.avatarId}`, {
+                                state: { 
+                                    client: {
+                                        clientId: chat.clientId,
+                                        name: chat.clientName,
+                                        avatarId: chat.avatarId,
+                                        avatarName: chat.avatarName,
+                                    } 
+                                },
+                            })}
                         >
-                            <button
-                                onClick={() =>
-                                    navigate(`/chat/${chat.clientId}/${chat.avatarId}`, {
-                                        state: { 
-                                            client: {
-                                                clientId: chat.clientId,
-                                                name: chat.clientName,
-                                                avatarId: chat.avatarId,
-                                                avatarName: chat.avatarName,
-                                            } 
-                                        },
-                                    })
-                                }
-                                className="w-full text-left"
-                                disabled={isDeleting}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        {/* Avatar Icon */}
-                                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                                            <Sparkles size={24} />
-                                        </div>
+                            <div className="flex items-start gap-4 p-4">
+                                {/* Avatar Icon - Round with gradient */}
+                                <div className="w-14 h-14 bg-gradient-to-br from-fuchsia-400 to-purple-500 rounded-full flex items-center justify-center text-white shadow-md flex-shrink-0">
+                                    <MessageSquare size={24} />
+                                </div>
 
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-slate-900">
-                                                {chat.avatarName}
+                                            <h3 className="text-base font-semibold text-slate-900">
+                                                {chat.avatarName || 'AI Therapist'}
                                             </h3>
-                                            <p className="text-sm text-slate-500 mt-0.5">
-                                                AI Therapy Companion
+                                            <p className="text-sm text-slate-500">
+                                                {userNickname}
                                             </p>
                                         </div>
+                                        <span className="text-xs text-slate-400 flex-shrink-0 ml-2">
+                                            {formatTime(chat.lastMessageAt || chat.createdAt)}
+                                        </span>
                                     </div>
-
-                                    {/* Arrow */}
-                                    <div className="text-slate-400 group-hover:text-indigo-600 transition-colors">
-                                        <ArrowRight size={24} />
-                                    </div>
+                                    <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+                                        {lastMessage}
+                                    </p>
                                 </div>
-                            </button>
+                            </div>
 
-                            {/* Delete Button */}
+                            {/* Delete Button - appears on hover */}
                             <button
-                                onClick={(e) => handleDelete(chat, e)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(chat, e);
+                                }}
                                 disabled={isDeleting}
-                                className="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                className="absolute top-2 right-2 p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                                 title="Remove conversation"
                             >
                                 {isDeleting ? (
-                                    <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                                 ) : (
-                                    <Trash2 size={18} />
+                                    <Trash2 size={16} />
                                 )}
                             </button>
                         </div>

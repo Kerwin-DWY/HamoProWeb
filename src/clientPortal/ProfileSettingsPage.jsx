@@ -1,19 +1,50 @@
-import { useState } from "react";
-import { Plus, QrCode, Upload, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Upload, CheckCircle2, Save, Loader2 } from "lucide-react";
 import InviteCodeModal from "./InviteCodeModal";
 import { acceptInvite } from "../api/lambdaAPI/acceptInvitesApi.js";
 import { createUserChat } from "../api/lambdaAPI/userChatsApi.js";
+import { updateNickname } from "../api/lambdaAPI/userApi.js";
 import { useAuth } from "../auth/AuthProvider";
 import { useUser } from "../context/UserContext";
 
 export default function ProfileSettingsPage() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
+    const [nickname, setNickname] = useState("");
+    const [savingNickname, setSavingNickname] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const auth = useAuth();
-    const { chats, setChats } = useUser();
+    const { chats, setChats, profile, setProfile } = useUser();
+
+    // Initialize nickname from profile
+    useEffect(() => {
+        if (profile?.nickname) {
+            setNickname(profile.nickname);
+        }
+    }, [profile]);
+
+    const handleSaveNickname = async () => {
+        if (!nickname.trim()) {
+            alert("Please enter a nickname");
+            return;
+        }
+
+        setSavingNickname(true);
+        try {
+            const updatedProfile = await updateNickname(auth.user.access_token, nickname);
+            setProfile(updatedProfile);
+            setSuccessMessage("Nickname updated!");
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+        } catch (err) {
+            console.error("Failed to update nickname:", err);
+            alert("Failed to update nickname");
+        } finally {
+            setSavingNickname(false);
+        }
+    };
 
     const handleAcceptInvite = async (code) => {
         try {
@@ -97,31 +128,51 @@ export default function ProfileSettingsPage() {
                         <div
                             className="
                             w-20 h-20 rounded-full
-                            bg-gradient-to-br from-indigo-400 to-purple-500
+                            bg-gradient-to-br from-fuchsia-400 to-purple-500
                             flex items-center justify-center
                             text-white text-3xl font-semibold
                             "
                         >
-                            K
+                            {(nickname || auth.user?.profile?.email || 'U')[0].toUpperCase()}
                         </div>
 
-                        <button
-                            className="
-                            flex items-center gap-2
-                            px-5 py-2 rounded-xl
-                            border border-slate-300
-                            text-slate-700
-                            hover:bg-slate-100 transition
-                              "
-                        >
-                            <Upload size={16} />
-                            Change Avatar
-                        </button>
+                        <div className="flex-1">
+                            <p className="text-sm text-slate-500 mb-1">Display Name</p>
+                            <p className="font-medium text-slate-900">
+                                {nickname || auth.user?.profile?.email?.split('@')[0] || 'Not set'}
+                            </p>
+                        </div>
                     </div>
 
                     {/* Form */}
                     <div className="space-y-6">
-                        <Input label="Email" />
+                        {/* Nickname Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Nickname
+                            </label>
+                            <div className="flex gap-3">
+                                <input
+                                    value={nickname}
+                                    onChange={(e) => setNickname(e.target.value)}
+                                    placeholder="Enter your nickname"
+                                    className="flex-1 rounded-xl px-4 py-2.5 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <button
+                                    onClick={handleSaveNickname}
+                                    disabled={savingNickname}
+                                    className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {savingNickname ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    Save
+                                </button>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">
+                                This name will be displayed in your chat sessions
+                            </p>
+                        </div>
+
+                        <Input label="Email" value={auth.user?.profile?.email || ''} disabled />
 
                         <PasswordInput
                             label="Current Password"
@@ -145,7 +196,7 @@ export default function ProfileSettingsPage() {
                             transition shadow-lg
                           "
                         >
-                            Save Changes
+                            Change Password
                         </button>
                     </div>
                 </section>

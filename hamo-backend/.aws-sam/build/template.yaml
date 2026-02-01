@@ -184,6 +184,13 @@ Resources:
               Ref: HamoHttpApi
             Path: /user/init
             Method: POST
+        UpdateProfile:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: HamoHttpApi
+            Path: /user/profile
+            Method: PUT
     Metadata:
       SamResourceId: UserInitFunction
   InvitesFunction:
